@@ -39,8 +39,8 @@ The Personal Finance Super App is built as a modern, full-stack Next.js applicat
 ## Technology Stack
 
 ### Frontend
-- **Next.js 14.2+**: React framework with App Router
-- **React 18.3+**: UI library
+- **Next.js 15.5+**: React framework with App Router
+- **React 19+**: UI library
 - **TypeScript**: Type-safe development
 - **Tailwind CSS**: Utility-first CSS framework
 - **Lucide React**: Beautiful icon library
@@ -49,7 +49,11 @@ The Personal Finance Super App is built as a modern, full-stack Next.js applicat
 ### Backend
 - **Next.js API Routes**: RESTful API endpoints
 - **Prisma 5.14+**: Modern ORM for database access
-- **SQLite**: Lightweight, file-based database
+- **PostgreSQL** (Supabase): Production database with cloud hosting
+
+### Deployment
+- **Vercel**: Serverless deployment platform
+- **Supabase**: Managed PostgreSQL database with connection pooling
 
 ### Additional Libraries
 - **Recharts**: Charting library (ready for future use)
@@ -409,31 +413,58 @@ Route (app)                              Size     First Load JS
 
 ## Deployment
 
-### Development
+### Development (Local)
 ```bash
+# Setup environment
+cp .env.example .env
+# Edit .env with your Supabase credentials
+
+# Install dependencies and setup
+npm install
+npx prisma db push
+
+# Run development server
 npm run dev
 # Server runs on http://localhost:3000
 ```
 
-### Production
-```bash
-npm run build
-npm start
-# Or deploy to Vercel/Netlify
-```
+### Production (Vercel + Supabase)
+
+**Quick Deploy:**
+1. Create Supabase project at [supabase.com](https://supabase.com)
+2. Get DATABASE_URL and DIRECT_URL from Supabase dashboard
+3. Deploy to Vercel from GitHub repository
+4. Add environment variables on Vercel
+5. Run `npx prisma db push` to initialize database
+
+**Detailed Guide:** See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
 
 ### Environment Variables
-```env
-# Database
-DATABASE_URL="file:./prisma/dev.db"
 
-# API Keys (future)
+**Required for Production:**
+```env
+# Database (from Supabase)
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+
+# Application
+NEXT_PUBLIC_APP_URL="https://your-app.vercel.app"
+```
+
+**Optional (Future):**
+```env
+# API Keys for exchange integration
 BINANCE_API_URL="https://api.binance.com"
 OKX_API_URL="https://www.okx.com/api"
-
-# Settings
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
+
+### Vercel Configuration
+
+The app is optimized for Vercel serverless deployment:
+- Automatic Prisma client generation via postinstall
+- Connection pooling for PostgreSQL
+- Serverless-friendly database client singleton
+- Environment variables through Vercel dashboard
 
 ## Testing Strategy
 

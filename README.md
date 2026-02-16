@@ -61,8 +61,10 @@ Sau khi ghi nhận giao dịch thẻ, hệ thống tự động:
 ### Yêu cầu
 - Node.js 18+
 - npm hoặc yarn
+- Tài khoản Supabase (miễn phí)
+- Tài khoản Vercel (miễn phí) - nếu muốn deploy
 
-### Cài đặt
+### Development Local
 
 ```bash
 # Clone repository
@@ -72,8 +74,11 @@ cd quan-ly-tai-san
 # Cài đặt dependencies
 npm install
 
+# Setup environment variables
+cp .env.example .env
+# Điền thông tin Supabase vào file .env
+
 # Khởi tạo database
-npx prisma generate
 npx prisma db push
 
 # Chạy development server
@@ -81,6 +86,19 @@ npm run dev
 ```
 
 Mở [http://localhost:3000](http://localhost:3000) trong trình duyệt.
+
+### 🌐 Deploy lên Production (Vercel + Supabase)
+
+**Hướng dẫn chi tiết**: Xem [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+
+**Tóm tắt nhanh**:
+1. Tạo project trên [Supabase](https://supabase.com) (chọn region Singapore)
+2. Copy DATABASE_URL và DIRECT_URL từ Supabase
+3. Deploy lên [Vercel](https://vercel.com) từ GitHub repository
+4. Thêm environment variables trên Vercel
+5. Chạy `npx prisma db push` để tạo tables
+
+✅ Done! App sẵn sàng trên production với database cloud.
 
 ## 📱 Sử dụng
 
