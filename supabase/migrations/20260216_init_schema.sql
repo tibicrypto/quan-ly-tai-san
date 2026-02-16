@@ -89,6 +89,48 @@ CREATE TABLE "FundTransaction" (
     CONSTRAINT "FundTransaction_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "FundAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- Cash Assets Table
+CREATE TABLE "CashAsset" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "currency" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "location" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- Cash Transactions Table
+CREATE TABLE "CashTransaction" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "assetId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "description" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "CashTransaction_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "CashAsset"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Real Estate Assets Table
+CREATE TABLE "RealEstateAsset" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "type" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "area" DOUBLE PRECISION NOT NULL,
+    "purchasePrice" DOUBLE PRECISION NOT NULL,
+    "currentPrice" DOUBLE PRECISION,
+    "purchaseDate" TIMESTAMP(3) NOT NULL,
+    "ownership" TEXT,
+    "rentalIncome" DOUBLE PRECISION,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
 -- ============================================
 -- CREDIT CARD ARBITRAGE TABLES
 -- ============================================
@@ -232,6 +274,18 @@ CREATE INDEX "FundAsset_fundCompany_idx" ON "FundAsset"("fundCompany");
 CREATE INDEX "FundTransaction_assetId_idx" ON "FundTransaction"("assetId");
 CREATE INDEX "FundTransaction_date_idx" ON "FundTransaction"("date");
 
+-- Cash Assets Indexes
+CREATE INDEX "CashAsset_currency_idx" ON "CashAsset"("currency");
+
+-- Cash Transactions Indexes
+CREATE INDEX "CashTransaction_assetId_idx" ON "CashTransaction"("assetId");
+CREATE INDEX "CashTransaction_date_idx" ON "CashTransaction"("date");
+CREATE INDEX "CashTransaction_type_idx" ON "CashTransaction"("type");
+
+-- Real Estate Assets Indexes
+CREATE INDEX "RealEstateAsset_type_idx" ON "RealEstateAsset"("type");
+CREATE INDEX "RealEstateAsset_purchaseDate_idx" ON "RealEstateAsset"("purchaseDate");
+
 -- Credit Cards Indexes
 CREATE INDEX "CreditCard_bankName_idx" ON "CreditCard"("bankName");
 CREATE INDEX "CreditCard_isActive_idx" ON "CreditCard"("isActive");
@@ -267,6 +321,9 @@ ALTER TABLE "CryptoTransaction" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "GoldSilverAsset" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "FundAsset" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "FundTransaction" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "CashAsset" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "CashTransaction" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RealEstateAsset" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "CreditCard" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "CardTransaction" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "PaymentReminder" ENABLE ROW LEVEL SECURITY;
@@ -296,6 +353,18 @@ CREATE POLICY "Enable all access for authenticated users" ON "FundAsset"
 
 -- FundTransaction policies
 CREATE POLICY "Enable all access for authenticated users" ON "FundTransaction"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- CashAsset policies
+CREATE POLICY "Enable all access for authenticated users" ON "CashAsset"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- CashTransaction policies
+CREATE POLICY "Enable all access for authenticated users" ON "CashTransaction"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- RealEstateAsset policies
+CREATE POLICY "Enable all access for authenticated users" ON "RealEstateAsset"
     FOR ALL USING (auth.role() = 'authenticated');
 
 -- CreditCard policies
@@ -349,6 +418,12 @@ CREATE TRIGGER update_gold_silver_asset_updated_at BEFORE UPDATE ON "GoldSilverA
 CREATE TRIGGER update_fund_asset_updated_at BEFORE UPDATE ON "FundAsset"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_cash_asset_updated_at BEFORE UPDATE ON "CashAsset"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_real_estate_asset_updated_at BEFORE UPDATE ON "RealEstateAsset"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_credit_card_updated_at BEFORE UPDATE ON "CreditCard"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -385,6 +460,9 @@ COMMENT ON TABLE "CryptoTransaction" IS 'Transaction history for cryptocurrency 
 COMMENT ON TABLE "GoldSilverAsset" IS 'Gold and silver physical assets';
 COMMENT ON TABLE "FundAsset" IS 'Investment fund assets (Open-ended funds and ETFs)';
 COMMENT ON TABLE "FundTransaction" IS 'Transaction history for fund assets';
+COMMENT ON TABLE "CashAsset" IS 'Cash holdings in various currencies';
+COMMENT ON TABLE "CashTransaction" IS 'Transaction history for cash assets';
+COMMENT ON TABLE "RealEstateAsset" IS 'Real estate properties including apartments, houses, land, and commercial';
 COMMENT ON TABLE "CreditCard" IS 'Credit card information with interest-free period details';
 COMMENT ON TABLE "CardTransaction" IS 'Credit card transactions with savings recommendations';
 COMMENT ON TABLE "PaymentReminder" IS 'Automated payment reminders for credit cards';

@@ -91,6 +91,47 @@ model FundTransaction {
   createdAt DateTime   @default(now())
 }
 
+model CashAsset {
+  id              String   @id @default(cuid())
+  name            String   // e.g., "Tiền mặt VND", "Tiền mặt USD"
+  currency        String   // VND, USD, EUR, etc.
+  amount          Float    // Current amount in the currency
+  location        String?  // Where it's stored: "Nhà", "Két sắt", etc.
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  transactions    CashTransaction[]
+}
+
+model CashTransaction {
+  id          String     @id @default(cuid())
+  assetId     String
+  asset       CashAsset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type        String     // DEPOSIT, WITHDRAW, EXCHANGE
+  amount      Float
+  description String
+  date        DateTime
+  notes       String?
+  createdAt   DateTime   @default(now())
+}
+
+model RealEstateAsset {
+  id              String   @id @default(cuid())
+  type            String   // APARTMENT, HOUSE, LAND, COMMERCIAL
+  name            String   // e.g., "Căn hộ Vinhomes Central Park"
+  address         String   // Full address
+  area            Float    // Area in square meters
+  purchasePrice   Float    // Purchase price in VND
+  currentPrice    Float?   // Current estimated value in VND
+  purchaseDate    DateTime
+  ownership       String?  // FULL, PARTIAL percentage
+  rentalIncome    Float?   // Monthly rental income if applicable
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 // Credit Card Arbitrage Models
 model CreditCard {
   id                  String   @id @default(cuid())

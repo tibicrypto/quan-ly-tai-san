@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Bitcoin, Coins, TrendingUp, Plus } from 'lucide-react'
+import { Bitcoin, Coins, TrendingUp, Plus, Wallet, Home } from 'lucide-react'
 
 export default function InvestmentsPage() {
   return (
@@ -8,13 +8,13 @@ export default function InvestmentsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Danh mục Đầu tư</h1>
           <p className="text-gray-600 mt-2">
-            Quản lý Crypto, Vàng/Bạc, và Quỹ đầu tư
+            Quản lý Crypto, Vàng/Bạc, Quỹ đầu tư, Tiền mặt, và Bất động sản
           </p>
         </div>
       </div>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -49,6 +49,32 @@ export default function InvestmentsPage() {
             </div>
             <div className="bg-yellow-100 p-3 rounded-lg">
               <Coins className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+          <div className="mt-2 text-sm text-gray-500">0 tài sản</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Tiền mặt</p>
+              <p className="text-2xl font-bold text-gray-900">0 ₫</p>
+            </div>
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <Wallet className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+          <div className="mt-2 text-sm text-gray-500">0 tài sản</div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">BĐS</p>
+              <p className="text-2xl font-bold text-gray-900">0 ₫</p>
+            </div>
+            <div className="bg-purple-100 p-3 rounded-lg">
+              <Home className="w-6 h-6 text-purple-600" />
             </div>
           </div>
           <div className="mt-2 text-sm text-gray-500">0 tài sản</div>
@@ -157,6 +183,72 @@ export default function InvestmentsPage() {
           <Link
             href="/investments/funds"
             className="mt-4 block text-center text-green-600 hover:text-green-700 font-medium"
+          >
+            Xem chi tiết →
+          </Link>
+        </div>
+
+        {/* Cash Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <Wallet className="w-5 h-5 mr-2 text-blue-600" />
+              Tiền mặt
+            </h2>
+            <Link
+              href="/investments/cash/new"
+              className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="space-y-3">
+            <div className="text-sm text-gray-600">
+              • Tiền mặt VND, USD, EUR
+            </div>
+            <div className="text-sm text-gray-600">
+              • Theo dõi vị trí lưu trữ
+            </div>
+            <div className="text-sm text-gray-600">
+              • Quy đổi tỷ giá ngoại tệ
+            </div>
+          </div>
+          <Link
+            href="/investments/cash"
+            className="mt-4 block text-center text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Xem chi tiết →
+          </Link>
+        </div>
+
+        {/* Real Estate Section */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <Home className="w-5 h-5 mr-2 text-purple-600" />
+              Bất động sản
+            </h2>
+            <Link
+              href="/investments/real-estate/new"
+              className="bg-purple-500 text-white p-2 rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="space-y-3">
+            <div className="text-sm text-gray-600">
+              • Căn hộ, nhà phố, đất nền
+            </div>
+            <div className="text-sm text-gray-600">
+              • Theo dõi giá trị & lãi/lỗ
+            </div>
+            <div className="text-sm text-gray-600">
+              • Thu nhập cho thuê
+            </div>
+          </div>
+          <Link
+            href="/investments/real-estate"
+            className="mt-4 block text-center text-purple-600 hover:text-purple-700 font-medium"
           >
             Xem chi tiết →
           </Link>
