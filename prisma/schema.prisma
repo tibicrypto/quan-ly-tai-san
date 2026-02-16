@@ -1,0 +1,199 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Investment Portfolio Models
+model CryptoAsset {
+  id                String   @id @default(cuid())
+  name              String   // e.g., Bitcoin, Ethereum
+  symbol            String   // e.g., BTC, ETH
+  exchange          String   // e.g., Binance, OKX, Bybit
+  apiKeyId          String?  // Reference to API key (encrypted)
+  balance           Float    // Current balance
+  averagePrice      Float    // Average purchase price in USDT
+  currentPrice      Float?   // Current price in USDT
+  usdtVndRate       Float    // Custom USDT/VND rate for accurate VND calculation
+  alertThreshold    Float?   // Alert when price changes by this percentage
+  stopLoss          Float?   // Stop loss price
+  takeProfit        Float?   // Take profit price
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  transactions      CryptoTransaction[]
+}
+
+model CryptoTransaction {
+  id          String      @id @default(cuid())
+  assetId     String
+  asset       CryptoAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type        String      // BUY, SELL, TRANSFER
+  amount      Float
+  price       Float       // Price in USDT
+  usdtVndRate Float       // USDT/VND rate at transaction time
+  fee         Float       @default(0)
+  date        DateTime
+  notes       String?
+  createdAt   DateTime    @default(now())
+}
+
+model GoldSilverAsset {
+  id              String   @id @default(cuid())
+  type            String   // SJC_GOLD_BAR, JEWELRY_GOLD, SILVER
+  name            String   // e.g., "Vàng SJC 1 lượng", "Nhẫn vàng 24K"
+  weight          Float    // Weight in grams or taels
+  unit            String   // gram, chỉ, lượng
+  purchasePrice   Float    // Purchase price per unit in VND
+  currentPrice    Float?   // Current market price per unit
+  vendor          String?  // SJC, DOJI, PNJ, etc.
+  purchaseDate    DateTime
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FundAsset {
+  id              String   @id @default(cuid())
+  name            String   // Fund name
+  fundCode        String   // Fund code
+  fundCompany     String   // Dragon Capital, VinaCapital, SSIAM, etc.
+  type            String   // OPEN_ENDED, ETF
+  units           Float    // Number of units owned
+  avgNavPrice     Float    // Average NAV at purchase
+  currentNav      Float?   // Current NAV
+  purchaseDate    DateTime
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  transactions    FundTransaction[]
+}
+
+model FundTransaction {
+  id        String     @id @default(cuid())
+  assetId   String
+  asset     FundAsset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type      String     // BUY, SELL
+  units     Float
+  navPrice  Float
+  amount    Float
+  date      DateTime
+  notes     String?
+  createdAt DateTime   @default(now())
+}
+
+// Credit Card Arbitrage Models
+model CreditCard {
+  id                  String   @id @default(cuid())
+  bankName            String   // VIB, HSBC, Techcombank, etc.
+  cardName            String   // Card product name
+  lastFourDigits      String   // Last 4 digits for identification
+  statementDay        Int      // Day of month for statement (1-31)
+  interestFreeDays    Int      // Total interest-free period (45, 55 days)
+  paymentDueDays      Int      // Days after statement for payment (typically 15-20)
+  creditLimit         Float?   // Credit limit in VND
+  notes               String?
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  transactions        CardTransaction[]
+  reminders           PaymentReminder[]
+}
+
+model CardTransaction {
+  id                  String       @id @default(cuid())
+  cardId              String
+  card                CreditCard   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  amount              Float        // Transaction amount in VND
+  description         String
+  transactionDate     DateTime
+  statementDate       DateTime?    // Calculated statement date
+  dueDate             DateTime?    // Calculated due date
+  isPaid              Boolean      @default(false)
+  savingsRecommended  Boolean      @default(false) // Whether savings was recommended
+  savingsAmount       Float?       // Amount put in savings
+  savingsInterest     Float?       // Estimated interest from savings
+  actualInterest      Float?       // Actual interest earned
+  notes               String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+}
+
+model PaymentReminder {
+  id              String      @id @default(cuid())
+  cardId          String
+  card            CreditCard  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  transactionId   String?     // Optional reference to specific transaction
+  reminderDate    DateTime
+  dueDate         DateTime
+  amount          Float
+  message         String
+  isCompleted     Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+// Savings Recommendation Models
+model SavingsRecommendation {
+  id                  String   @id @default(cuid())
+  cardTransactionId   String?  // Link to card transaction if applicable
+  amount              Float    // Amount to save in VND
+  recommendationType  String   // TERM_DEPOSIT_1M, FLEXIBLE_SAVINGS, MMF
+  estimatedInterest   Float    // Estimated interest to earn
+  interestRate        Float    // Annual interest rate
+  startDate           DateTime
+  endDate             DateTime
+  bankName            String?  // Recommended bank
+  productName         String?  // Savings product name
+  isAccepted          Boolean  @default(false)
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// API Keys for Exchange Integration (Encrypted)
+model ExchangeApiKey {
+  id          String   @id @default(cuid())
+  exchange    String   // BINANCE, OKX, BYBIT
+  apiKey      String   // Encrypted API key
+  secretKey   String   // Encrypted secret key
+  isReadOnly  Boolean  @default(true) // Must be read-only for security
+  isActive    Boolean  @default(true)
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Price History for tracking
+model PriceHistory {
+  id        String   @id @default(cuid())
+  assetType String   // CRYPTO, GOLD, FUND
+  assetId   String   // ID of the asset
+  symbol    String   // Asset symbol/code
+  price     Float
+  currency  String   // USDT, VND
+  source    String   // API source
+  timestamp DateTime
+  createdAt DateTime @default(now())
+}
+
+// User settings
+model Settings {
+  id                      String   @id @default(cuid())
+  defaultUsdtVndRate      Float    @default(24000) // Default USDT/VND rate
+  enablePriceAlerts       Boolean  @default(true)
+  enablePaymentReminders  Boolean  @default(true)
+  reminderDaysBefore      Int      @default(2) // Days before due date to remind
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
