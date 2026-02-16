@@ -20,8 +20,10 @@ if [ ! -f .env.local ]; then
     exit 1
 fi
 
-# Source environment variables
-export $(cat .env.local | grep -v '^#' | xargs)
+# Source environment variables safely
+set -a
+source .env.local
+set +a
 
 # Check if required variables are set
 if [ -z "$DIRECT_URL" ]; then
