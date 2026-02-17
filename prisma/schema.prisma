@@ -238,3 +238,58 @@ model Settings {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }
+
+// Portfolio Rebalancing Models
+model PortfolioAllocation {
+  id              String   @id @default(cuid())
+  assetClass      String   // CRYPTO, GOLD_SILVER, FUNDS, CASH, REAL_ESTATE
+  targetPercent   Float    // Target allocation percentage (0-100)
+  currentPercent  Float?   // Current allocation percentage
+  isActive        Boolean  @default(true)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model RebalanceRecommendation {
+  id              String   @id @default(cuid())
+  assetClass      String   // CRYPTO, GOLD_SILVER, FUNDS, CASH, REAL_ESTATE
+  currentValue    Float    // Current value in VND
+  targetValue     Float    // Target value in VND
+  difference      Float    // Difference in VND (positive = buy, negative = sell)
+  action          String   // BUY, SELL, HOLD
+  priority        String   // HIGH, MEDIUM, LOW
+  isExecuted      Boolean  @default(false)
+  executedAt      DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Goal-Based Investing Models
+model InvestmentGoal {
+  id              String   @id @default(cuid())
+  name            String   // e.g., "Retirement", "House Down Payment", "Children Education"
+  type            String   // RETIREMENT, HOUSE, EDUCATION, TRAVEL, OTHER
+  targetAmount    Float    // Target amount in VND
+  currentAmount   Float    @default(0) // Current saved amount
+  deadline        DateTime // Target date to achieve goal
+  priority        String   // HIGH, MEDIUM, LOW
+  monthlyContribution Float? // Recommended monthly contribution
+  isCompleted     Boolean  @default(false)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  allocations     GoalAllocation[]
+}
+
+model GoalAllocation {
+  id              String          @id @default(cuid())
+  goalId          String
+  goal            InvestmentGoal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  assetClass      String          // CRYPTO, GOLD_SILVER, FUNDS, CASH, REAL_ESTATE
+  allocationPercent Float         // Percentage allocated to this asset class
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}

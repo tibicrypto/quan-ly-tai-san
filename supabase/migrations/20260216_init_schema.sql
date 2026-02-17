@@ -235,6 +235,69 @@ CREATE TABLE "PriceHistory" (
 );
 
 -- ============================================
+-- PORTFOLIO REBALANCING TABLES
+-- ============================================
+
+-- Portfolio Allocation Configuration Table
+CREATE TABLE "PortfolioAllocation" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "assetClass" TEXT NOT NULL,
+    "targetPercent" DOUBLE PRECISION NOT NULL,
+    "currentPercent" DOUBLE PRECISION,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- Rebalance Recommendations Table
+CREATE TABLE "RebalanceRecommendation" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "assetClass" TEXT NOT NULL,
+    "currentValue" DOUBLE PRECISION NOT NULL,
+    "targetValue" DOUBLE PRECISION NOT NULL,
+    "difference" DOUBLE PRECISION NOT NULL,
+    "action" TEXT NOT NULL,
+    "priority" TEXT NOT NULL,
+    "isExecuted" BOOLEAN NOT NULL DEFAULT false,
+    "executedAt" TIMESTAMP(3),
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- ============================================
+-- GOAL-BASED INVESTING TABLES
+-- ============================================
+
+-- Investment Goals Table
+CREATE TABLE "InvestmentGoal" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "targetAmount" DOUBLE PRECISION NOT NULL,
+    "currentAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "deadline" TIMESTAMP(3) NOT NULL,
+    "priority" TEXT NOT NULL,
+    "monthlyContribution" DOUBLE PRECISION,
+    "isCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- Goal Asset Allocation Table
+CREATE TABLE "GoalAllocation" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "goalId" TEXT NOT NULL,
+    "assetClass" TEXT NOT NULL,
+    "allocationPercent" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "GoalAllocation_goalId_fkey" FOREIGN KEY ("goalId") REFERENCES "InvestmentGoal"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- ============================================
 -- SETTINGS TABLE
 -- ============================================
 
@@ -311,6 +374,24 @@ CREATE INDEX "PriceHistory_timestamp_idx" ON "PriceHistory"("timestamp");
 CREATE INDEX "ExchangeApiKey_exchange_idx" ON "ExchangeApiKey"("exchange");
 CREATE INDEX "ExchangeApiKey_isActive_idx" ON "ExchangeApiKey"("isActive");
 
+-- Portfolio Allocation Indexes
+CREATE INDEX "PortfolioAllocation_assetClass_idx" ON "PortfolioAllocation"("assetClass");
+CREATE INDEX "PortfolioAllocation_isActive_idx" ON "PortfolioAllocation"("isActive");
+
+-- Rebalance Recommendation Indexes
+CREATE INDEX "RebalanceRecommendation_assetClass_idx" ON "RebalanceRecommendation"("assetClass");
+CREATE INDEX "RebalanceRecommendation_isExecuted_idx" ON "RebalanceRecommendation"("isExecuted");
+CREATE INDEX "RebalanceRecommendation_createdAt_idx" ON "RebalanceRecommendation"("createdAt");
+
+-- Investment Goal Indexes
+CREATE INDEX "InvestmentGoal_type_idx" ON "InvestmentGoal"("type");
+CREATE INDEX "InvestmentGoal_deadline_idx" ON "InvestmentGoal"("deadline");
+CREATE INDEX "InvestmentGoal_isCompleted_idx" ON "InvestmentGoal"("isCompleted");
+
+-- Goal Allocation Indexes
+CREATE INDEX "GoalAllocation_goalId_idx" ON "GoalAllocation"("goalId");
+CREATE INDEX "GoalAllocation_assetClass_idx" ON "GoalAllocation"("assetClass");
+
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================
@@ -331,6 +412,10 @@ ALTER TABLE "SavingsRecommendation" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "ExchangeApiKey" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "PriceHistory" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Settings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PortfolioAllocation" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "RebalanceRecommendation" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "InvestmentGoal" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "GoalAllocation" ENABLE ROW LEVEL SECURITY;
 
 -- Create policies to allow all operations for authenticated users
 -- Note: Adjust these policies based on your specific security requirements
@@ -395,6 +480,22 @@ CREATE POLICY "Enable all access for authenticated users" ON "PriceHistory"
 CREATE POLICY "Enable all access for authenticated users" ON "Settings"
     FOR ALL USING (auth.role() = 'authenticated');
 
+-- PortfolioAllocation policies
+CREATE POLICY "Enable all access for authenticated users" ON "PortfolioAllocation"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- RebalanceRecommendation policies
+CREATE POLICY "Enable all access for authenticated users" ON "RebalanceRecommendation"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- InvestmentGoal policies
+CREATE POLICY "Enable all access for authenticated users" ON "InvestmentGoal"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- GoalAllocation policies
+CREATE POLICY "Enable all access for authenticated users" ON "GoalAllocation"
+    FOR ALL USING (auth.role() = 'authenticated');
+
 -- ============================================
 -- FUNCTIONS AND TRIGGERS
 -- ============================================
@@ -442,6 +543,18 @@ CREATE TRIGGER update_exchange_api_key_updated_at BEFORE UPDATE ON "ExchangeApiK
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON "Settings"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_portfolio_allocation_updated_at BEFORE UPDATE ON "PortfolioAllocation"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_rebalance_recommendation_updated_at BEFORE UPDATE ON "RebalanceRecommendation"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_investment_goal_updated_at BEFORE UPDATE ON "InvestmentGoal"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_goal_allocation_updated_at BEFORE UPDATE ON "GoalAllocation"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- INITIAL DATA
 -- ============================================
@@ -470,3 +583,7 @@ COMMENT ON TABLE "SavingsRecommendation" IS 'Savings recommendations based on pa
 COMMENT ON TABLE "ExchangeApiKey" IS 'Encrypted API keys for exchange integrations';
 COMMENT ON TABLE "PriceHistory" IS 'Historical price data for all asset types';
 COMMENT ON TABLE "Settings" IS 'Application-wide settings and preferences';
+COMMENT ON TABLE "PortfolioAllocation" IS 'Target allocation percentages for portfolio rebalancing';
+COMMENT ON TABLE "RebalanceRecommendation" IS 'Rebalancing recommendations based on target allocations';
+COMMENT ON TABLE "InvestmentGoal" IS 'Investment goals with target amounts and deadlines';
+COMMENT ON TABLE "GoalAllocation" IS 'Asset class allocations for specific investment goals';
