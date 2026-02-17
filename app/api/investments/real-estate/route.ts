@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       currentPrice,
       purchaseDate,
       rentalIncome,
-      ownershipPercentage,
+      ownership,
       notes,
     } = body
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         currentPrice: parseFloat(currentPrice),
         purchaseDate: new Date(purchaseDate),
         rentalIncome: rentalIncome ? parseFloat(rentalIncome) : null,
-        ownershipPercentage: ownershipPercentage ? parseFloat(ownershipPercentage) : 100,
+        ownership: ownership || 'FULL',
         notes: notes || '',
       },
     })

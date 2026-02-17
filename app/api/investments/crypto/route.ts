@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       averagePrice,
       currentPrice,
       usdtVndRate,
-      priceAlert,
+      alertThreshold,
       notes,
     } = body
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         averagePrice: parseFloat(averagePrice),
         currentPrice: currentPrice ? parseFloat(currentPrice) : parseFloat(averagePrice),
         usdtVndRate: usdtVndRate ? parseFloat(usdtVndRate) : 24500,
-        priceAlert: priceAlert ? parseFloat(priceAlert) : null,
+        alertThreshold: alertThreshold ? parseFloat(alertThreshold) : null,
         notes: notes || '',
       },
     })
