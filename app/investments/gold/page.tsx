@@ -55,13 +55,34 @@ export default function GoldPage() {
   const fetchPNJPrices = async () => {
     setIsLoadingPrices(true)
     try {
-      const response = await fetch('/api/gold-prices/pnj')
-      if (response.ok) {
-        const data = await response.json()
-        setPnjPrices(data)
-        setLastUpdate(new Date().toLocaleTimeString('vi-VN'))
-      } else {
+      // First fetch the prices from PNJ
+      const fetchResponse = await fetch('/api/gold-prices/pnj')
+      if (!fetchResponse.ok) {
         alert('Không thể lấy giá vàng từ PNJ. Vui lòng thử lại.')
+        return
+      }
+      
+      const data = await fetchResponse.json()
+      setPnjPrices(data)
+      setLastUpdate(new Date().toLocaleTimeString('vi-VN'))
+      
+      // Then save to database and update assets
+      const saveResponse = await fetch('/api/gold-prices/pnj', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (saveResponse.ok) {
+        const saveResult = await saveResponse.json()
+        console.log('Prices saved to database:', saveResult)
+        
+        // Refresh assets to show updated prices
+        await fetchAssets()
+        
+        // Show success message
+        alert(`Đã cập nhật giá vàng vào database!\n- Vàng trang sức: ${saveResult.assetsUpdated.jewelryGold} tài sản\n- Vàng miếng SJC: ${saveResult.assetsUpdated.sjcGoldBars} tài sản`)
       }
     } catch (error) {
       console.error('Error fetching PNJ prices:', error)

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 /**
- * API Route to fetch current gold prices from PNJ
+ * API Route to fetch current gold prices from PNJ and save to database
  * Based on the Python scraper logic provided
  */
 
@@ -132,39 +135,92 @@ export async function GET(request: Request) {
 }
 
 /**
- * POST /api/gold-prices/pnj/update
- * Update gold asset prices from PNJ
- * Body: { assetIds?: string[] } - Optional array of asset IDs to update
+ * POST /api/gold-prices/pnj
+ * Save gold prices from PNJ to database (PriceHistory table)
+ * Also updates current prices for matching gold assets
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { assetIds } = body;
-    
-    // Fetch current prices
+    // Fetch current prices from PNJ
     const prices = await fetchGoldPricesForDate(new Date());
     
     if (!prices) {
       return NextResponse.json(
-        { error: 'Could not fetch current gold prices' },
+        { error: 'Could not fetch current gold prices from PNJ' },
         { status: 404 }
       );
     }
     
-    // TODO: Update database with new prices
-    // This would require Prisma client integration
-    // For now, return the prices that would be updated
+    // Save to PriceHistory table
+    const priceHistoryRecords = [];
+    
+    // Save PNJ price (jewelry gold 24K)
+    if (prices.pnj.buyPrice > 0) {
+      const pnjHistory = await prisma.priceHistory.create({
+        data: {
+          assetType: 'GOLD',
+          assetId: 'PNJ_JEWELRY_GOLD',
+          symbol: 'PNJ-24K',
+          price: prices.pnj.sellPrice, // Use sell price as market price
+          currency: 'VND_MILLION',
+          source: 'PNJ_WEBSITE',
+          timestamp: new Date()
+        }
+      });
+      priceHistoryRecords.push(pnjHistory);
+    }
+    
+    // Save SJC price (gold bars)
+    if (prices.sjc.buyPrice > 0) {
+      const sjcHistory = await prisma.priceHistory.create({
+        data: {
+          assetType: 'GOLD',
+          assetId: 'SJC_GOLD_BAR',
+          symbol: 'SJC-BAR',
+          price: prices.sjc.sellPrice, // Use sell price as market price
+          currency: 'VND_MILLION',
+          source: 'PNJ_WEBSITE',
+          timestamp: new Date()
+        }
+      });
+      priceHistoryRecords.push(sjcHistory);
+    }
+    
+    // Update current prices for existing gold assets
+    // Update all JEWELRY_GOLD assets with PNJ price
+    const jewelryUpdateCount = await prisma.goldSilverAsset.updateMany({
+      where: {
+        type: 'JEWELRY_GOLD'
+      },
+      data: {
+        currentPrice: prices.pnj.sellPrice
+      }
+    });
+    
+    // Update all SJC_GOLD_BAR assets with SJC price
+    const sjcUpdateCount = await prisma.goldSilverAsset.updateMany({
+      where: {
+        type: 'SJC_GOLD_BAR'
+      },
+      data: {
+        currentPrice: prices.sjc.sellPrice
+      }
+    });
     
     return NextResponse.json({
       success: true,
       prices,
-      message: 'Gold prices fetched successfully',
-      note: 'Database update requires backend integration'
-    });
+      priceHistoryRecords: priceHistoryRecords.length,
+      assetsUpdated: {
+        jewelryGold: jewelryUpdateCount.count,
+        sjcGoldBars: sjcUpdateCount.count
+      },
+      message: 'Giá vàng đã được cập nhật vào database thành công'
+    }, { status: 201 });
   } catch (error) {
     console.error('Update Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error while saving prices' },
       { status: 500 }
     );
   }
