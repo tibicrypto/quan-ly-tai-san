@@ -33,21 +33,21 @@ export default function NewGoldAssetPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save gold/silver asset
-      // const response = await fetch('/api/investments/gold', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      const response = await fetch('/api/investments/gold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        throw new Error('Failed to create asset')
+      }
       
       // Navigate back to gold page
       router.push('/investments/gold')
     } catch (error) {
       console.error('Error creating gold/silver asset:', error)
-      alert('Có lỗi xảy ra khi tạo tài sản')
+      alert('Có lỗi xảy ra khi tạo tài sản. Vui lòng thử lại.')
     } finally {
       setIsSubmitting(false)
     }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Coins, Plus, TrendingUp, RefreshCw } from 'lucide-react'
 
@@ -24,23 +24,33 @@ interface PNJGoldPrices {
 }
 
 export default function GoldPage() {
-  const [assets] = useState<GoldSilverAsset[]>([
-    {
-      id: '1',
-      type: 'SJC_GOLD_BAR',
-      name: 'Vàng SJC 1 lượng',
-      weight: 1,
-      unit: 'lượng',
-      purchasePrice: 75500000,
-      currentPrice: 78200000,
-      vendor: 'SJC',
-      purchaseDate: '2024-01-15',
-    },
-  ])
-
+  const [assets, setAssets] = useState<GoldSilverAsset[]>([])
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true)
   const [pnjPrices, setPnjPrices] = useState<PNJGoldPrices | null>(null)
   const [isLoadingPrices, setIsLoadingPrices] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<string | null>(null)
+
+  // Fetch assets from database
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    setIsLoadingAssets(true)
+    try {
+      const response = await fetch('/api/investments/gold')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+      } else {
+        console.error('Failed to fetch gold assets')
+      }
+    } catch (error) {
+      console.error('Error fetching gold assets:', error)
+    } finally {
+      setIsLoadingAssets(false)
+    }
+  }
 
   const fetchPNJPrices = async () => {
     setIsLoadingPrices(true)
@@ -259,7 +269,12 @@ export default function GoldPage() {
           Danh sách Tài sản
         </h2>
         
-        {assets.length === 0 ? (
+        {isLoadingAssets ? (
+          <div className="text-center py-12">
+            <RefreshCw className="w-16 h-16 text-gray-400 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải dữ liệu...</p>
+          </div>
+        ) : assets.length === 0 ? (
           <div className="text-center py-12">
             <Coins className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">Chưa có tài sản vàng bạc nào</p>
