@@ -298,6 +298,89 @@ CREATE TABLE "GoalAllocation" (
 );
 
 -- ============================================
+-- OPEN BANKING & AUTOMATION TABLES
+-- ============================================
+
+-- Bank Connection Table
+CREATE TABLE "BankConnection" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "bankName" TEXT NOT NULL,
+    "accountNumber" TEXT NOT NULL,
+    "accountType" TEXT NOT NULL,
+    "connectionType" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "lastSyncAt" TIMESTAMP(3),
+    "accessToken" TEXT,
+    "refreshToken" TEXT,
+    "expiresAt" TIMESTAMP(3),
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- Bank Transaction Table
+CREATE TABLE "BankTransaction" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "connectionId" TEXT NOT NULL,
+    "transactionDate" TIMESTAMP(3) NOT NULL,
+    "description" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "balance" DOUBLE PRECISION,
+    "category" TEXT,
+    "isProcessed" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "BankTransaction_connectionId_fkey" FOREIGN KEY ("connectionId") REFERENCES "BankConnection"("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- QR Code Scan Table
+CREATE TABLE "QRCodeScan" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "scanDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "qrType" TEXT NOT NULL,
+    "merchantName" TEXT,
+    "amount" DOUBLE PRECISION,
+    "description" TEXT,
+    "category" TEXT,
+    "isProcessed" BOOLEAN NOT NULL DEFAULT false,
+    "rawData" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- SMART REPORTS & ANALYTICS TABLES
+-- ============================================
+
+-- Cashflow Report Table
+CREATE TABLE "CashflowReport" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "reportMonth" TIMESTAMP(3) NOT NULL,
+    "totalIncome" DOUBLE PRECISION NOT NULL,
+    "totalExpenses" DOUBLE PRECISION NOT NULL,
+    "totalInvestment" DOUBLE PRECISION NOT NULL,
+    "savingsRate" DOUBLE PRECISION NOT NULL,
+    "netCashflow" DOUBLE PRECISION NOT NULL,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- Performance Metric Table
+CREATE TABLE "PerformanceMetric" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "metricDate" TIMESTAMP(3) NOT NULL,
+    "portfolioValue" DOUBLE PRECISION NOT NULL,
+    "twrr" DOUBLE PRECISION,
+    "mwrr" DOUBLE PRECISION,
+    "benchmarkReturn" DOUBLE PRECISION,
+    "sharpeRatio" DOUBLE PRECISION,
+    "volatility" DOUBLE PRECISION,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- SETTINGS TABLE
 -- ============================================
 
@@ -392,6 +475,28 @@ CREATE INDEX "InvestmentGoal_isCompleted_idx" ON "InvestmentGoal"("isCompleted")
 CREATE INDEX "GoalAllocation_goalId_idx" ON "GoalAllocation"("goalId");
 CREATE INDEX "GoalAllocation_assetClass_idx" ON "GoalAllocation"("assetClass");
 
+-- Bank Connection Indexes
+CREATE INDEX "BankConnection_bankName_idx" ON "BankConnection"("bankName");
+CREATE INDEX "BankConnection_isActive_idx" ON "BankConnection"("isActive");
+CREATE INDEX "BankConnection_lastSyncAt_idx" ON "BankConnection"("lastSyncAt");
+
+-- Bank Transaction Indexes
+CREATE INDEX "BankTransaction_connectionId_idx" ON "BankTransaction"("connectionId");
+CREATE INDEX "BankTransaction_transactionDate_idx" ON "BankTransaction"("transactionDate");
+CREATE INDEX "BankTransaction_category_idx" ON "BankTransaction"("category");
+CREATE INDEX "BankTransaction_isProcessed_idx" ON "BankTransaction"("isProcessed");
+
+-- QR Code Scan Indexes
+CREATE INDEX "QRCodeScan_scanDate_idx" ON "QRCodeScan"("scanDate");
+CREATE INDEX "QRCodeScan_qrType_idx" ON "QRCodeScan"("qrType");
+CREATE INDEX "QRCodeScan_isProcessed_idx" ON "QRCodeScan"("isProcessed");
+
+-- Cashflow Report Indexes
+CREATE INDEX "CashflowReport_reportMonth_idx" ON "CashflowReport"("reportMonth");
+
+-- Performance Metric Indexes
+CREATE INDEX "PerformanceMetric_metricDate_idx" ON "PerformanceMetric"("metricDate");
+
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================
@@ -416,6 +521,11 @@ ALTER TABLE "PortfolioAllocation" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "RebalanceRecommendation" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "InvestmentGoal" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "GoalAllocation" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "BankConnection" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "BankTransaction" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "QRCodeScan" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "CashflowReport" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PerformanceMetric" ENABLE ROW LEVEL SECURITY;
 
 -- Create policies to allow all operations for authenticated users
 -- Note: Adjust these policies based on your specific security requirements
@@ -496,6 +606,26 @@ CREATE POLICY "Enable all access for authenticated users" ON "InvestmentGoal"
 CREATE POLICY "Enable all access for authenticated users" ON "GoalAllocation"
     FOR ALL USING (auth.role() = 'authenticated');
 
+-- BankConnection policies
+CREATE POLICY "Enable all access for authenticated users" ON "BankConnection"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- BankTransaction policies
+CREATE POLICY "Enable all access for authenticated users" ON "BankTransaction"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- QRCodeScan policies
+CREATE POLICY "Enable all access for authenticated users" ON "QRCodeScan"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- CashflowReport policies
+CREATE POLICY "Enable all access for authenticated users" ON "CashflowReport"
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- PerformanceMetric policies
+CREATE POLICY "Enable all access for authenticated users" ON "PerformanceMetric"
+    FOR ALL USING (auth.role() = 'authenticated');
+
 -- ============================================
 -- FUNCTIONS AND TRIGGERS
 -- ============================================
@@ -555,6 +685,12 @@ CREATE TRIGGER update_investment_goal_updated_at BEFORE UPDATE ON "InvestmentGoa
 CREATE TRIGGER update_goal_allocation_updated_at BEFORE UPDATE ON "GoalAllocation"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_bank_connection_updated_at BEFORE UPDATE ON "BankConnection"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_cashflow_report_updated_at BEFORE UPDATE ON "CashflowReport"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 -- ============================================
 -- INITIAL DATA
 -- ============================================
@@ -587,3 +723,8 @@ COMMENT ON TABLE "PortfolioAllocation" IS 'Target allocation percentages for por
 COMMENT ON TABLE "RebalanceRecommendation" IS 'Rebalancing recommendations based on target allocations';
 COMMENT ON TABLE "InvestmentGoal" IS 'Investment goals with target amounts and deadlines';
 COMMENT ON TABLE "GoalAllocation" IS 'Asset class allocations for specific investment goals';
+COMMENT ON TABLE "BankConnection" IS 'Bank account connections for Open Banking integration';
+COMMENT ON TABLE "BankTransaction" IS 'Imported bank transactions for automated tracking';
+COMMENT ON TABLE "QRCodeScan" IS 'Scanned QR codes from invoices and VietQR for expense tracking';
+COMMENT ON TABLE "CashflowReport" IS 'Monthly cashflow reports with income, expenses, and savings rate';
+COMMENT ON TABLE "PerformanceMetric" IS 'Portfolio performance metrics including TWRR, MWRR, and risk-adjusted returns';

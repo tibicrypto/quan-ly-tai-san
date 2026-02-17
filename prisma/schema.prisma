@@ -293,3 +293,77 @@ model GoalAllocation {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 }
+
+// Open Banking & Automation Models
+model BankConnection {
+  id              String   @id @default(cuid())
+  bankName        String   // VCB, ACB, Techcombank, etc.
+  accountNumber   String   // Last 4 digits for security
+  accountType     String   // CHECKING, SAVINGS
+  connectionType  String   // API, MANUAL
+  isActive        Boolean  @default(true)
+  lastSyncAt      DateTime?
+  accessToken     String?  // Encrypted access token
+  refreshToken    String?  // Encrypted refresh token
+  expiresAt       DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  transactions    BankTransaction[]
+}
+
+model BankTransaction {
+  id              String         @id @default(cuid())
+  connectionId    String
+  connection      BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  transactionDate DateTime
+  description     String
+  amount          Float          // Positive for credit, negative for debit
+  balance         Float?         // Account balance after transaction
+  category        String?        // AUTO, FOOD, TRANSPORT, SHOPPING, etc.
+  isProcessed     Boolean        @default(false)
+  notes           String?
+  createdAt       DateTime       @default(now())
+}
+
+model QRCodeScan {
+  id              String   @id @default(cuid())
+  scanDate        DateTime @default(now())
+  qrType          String   // VIETQR, INVOICE, OTHER
+  merchantName    String?
+  amount          Float?
+  description     String?
+  category        String?  // AUTO_CATEGORIZED
+  isProcessed     Boolean  @default(false)
+  rawData         String?  // JSON data from QR
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+// Smart Reports & Analytics Models
+model CashflowReport {
+  id              String   @id @default(cuid())
+  reportMonth     DateTime // Month of the report
+  totalIncome     Float    // Total income for the month
+  totalExpenses   Float    // Total expenses
+  totalInvestment Float    // Investment contributions
+  savingsRate     Float    // Percentage saved
+  netCashflow     Float    // Income - Expenses - Investment
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PerformanceMetric {
+  id              String   @id @default(cuid())
+  metricDate      DateTime // Date of calculation
+  portfolioValue  Float    // Total portfolio value
+  twrr            Float?   // Time-Weighted Rate of Return
+  mwrr            Float?   // Money-Weighted Rate of Return  
+  benchmarkReturn Float?   // Benchmark comparison (e.g., VN-Index)
+  sharpeRatio     Float?   // Risk-adjusted return
+  volatility      Float?   // Portfolio volatility
+  notes           String?
+  createdAt       DateTime @default(now())
+}
