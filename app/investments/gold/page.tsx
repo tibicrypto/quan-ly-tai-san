@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Coins, Plus, TrendingUp } from 'lucide-react'
+import { Coins, Plus, TrendingUp, RefreshCw } from 'lucide-react'
 
 interface GoldSilverAsset {
   id: string
@@ -14,6 +14,13 @@ interface GoldSilverAsset {
   currentPrice: number
   vendor: string
   purchaseDate: string
+}
+
+interface PNJGoldPrices {
+  date: string
+  pnj: { type: string; buyPrice: number; sellPrice: number }
+  sjc: { type: string; buyPrice: number; sellPrice: number }
+  timestamp: string
 }
 
 export default function GoldPage() {
@@ -30,6 +37,29 @@ export default function GoldPage() {
       purchaseDate: '2024-01-15',
     },
   ])
+
+  const [pnjPrices, setPnjPrices] = useState<PNJGoldPrices | null>(null)
+  const [isLoadingPrices, setIsLoadingPrices] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null)
+
+  const fetchPNJPrices = async () => {
+    setIsLoadingPrices(true)
+    try {
+      const response = await fetch('/api/gold-prices/pnj')
+      if (response.ok) {
+        const data = await response.json()
+        setPnjPrices(data)
+        setLastUpdate(new Date().toLocaleTimeString('vi-VN'))
+      } else {
+        alert('Không thể lấy giá vàng từ PNJ. Vui lòng thử lại.')
+      }
+    } catch (error) {
+      console.error('Error fetching PNJ prices:', error)
+      alert('Lỗi kết nối. Vui lòng kiểm tra kết nối internet.')
+    } finally {
+      setIsLoadingPrices(false)
+    }
+  }
 
   const totalValue = assets.reduce((sum, asset) => 
     sum + (asset.weight * asset.currentPrice), 0
@@ -107,72 +137,120 @@ export default function GoldPage() {
 
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-amber-100">Giá SJC hôm nay</span>
-            <Coins className="w-5 h-5" />
+            <span className="text-sm text-amber-100">Giá PNJ hôm nay</span>
+            <button
+              onClick={fetchPNJPrices}
+              disabled={isLoadingPrices}
+              className="text-white hover:bg-amber-700 p-1 rounded transition-colors disabled:opacity-50"
+              title="Cập nhật giá từ PNJ"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingPrices ? 'animate-spin' : ''}`} />
+            </button>
           </div>
           <div className="text-xl font-bold">
-            78.2 tr/lượng
+            {pnjPrices ? `${pnjPrices.pnj.sellPrice} tr/lượng` : '78.2 tr/lượng'}
           </div>
           <div className="text-sm text-amber-100 mt-2">
-            Mua: 76.8 tr • Bán: 78.2 tr
+            {pnjPrices 
+              ? `Mua: ${pnjPrices.pnj.buyPrice} tr • Bán: ${pnjPrices.pnj.sellPrice} tr`
+              : 'Mua: 76.8 tr • Bán: 78.2 tr'
+            }
           </div>
+          {lastUpdate && (
+            <div className="text-xs text-amber-100 mt-1">
+              Cập nhật: {lastUpdate}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Price Sources */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Nguồn giá cập nhật
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Nguồn giá cập nhật
+          </h2>
+          <button
+            onClick={fetchPNJPrices}
+            disabled={isLoadingPrices}
+            className="flex items-center space-x-2 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoadingPrices ? 'animate-spin' : ''}`} />
+            <span>{isLoadingPrices ? 'Đang cập nhật...' : 'Cập nhật từ PNJ'}</span>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border border-yellow-300 rounded-lg p-4 bg-yellow-50">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">SJC</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
+              <span className="font-semibold text-gray-900">PNJ - Vàng trang sức</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                {pnjPrices ? 'Đã cập nhật' : 'Chưa cập nhật'}
+              </span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 mb-2">
+              Giá vàng 24K tại PNJ
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <div className="text-xs text-gray-500">Mua vào</div>
+                <div className="text-lg font-bold text-green-600">
+                  {pnjPrices ? `${pnjPrices.pnj.buyPrice.toFixed(2)}` : '76.80'} tr
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Bán ra</div>
+                <div className="text-lg font-bold text-red-600">
+                  {pnjPrices ? `${pnjPrices.pnj.sellPrice.toFixed(2)}` : '78.20'} tr
+                </div>
+              </div>
+            </div>
+            {pnjPrices && (
+              <div className="text-xs text-gray-500">
+                Ngày: {pnjPrices.date} • {new Date(pnjPrices.timestamp).toLocaleTimeString('vi-VN')}
+              </div>
+            )}
+          </div>
+
+          <div className="border border-yellow-300 rounded-lg p-4 bg-yellow-50">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-gray-900">SJC - Vàng miếng</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                {pnjPrices ? 'Đã cập nhật' : 'Chưa cập nhật'}
+              </span>
+            </div>
+            <div className="text-sm text-gray-600 mb-2">
               Vàng miếng SJC 1 lượng
             </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              78,200,000 ₫
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <div className="text-xs text-gray-500">Mua vào</div>
+                <div className="text-lg font-bold text-green-600">
+                  {pnjPrices ? `${pnjPrices.sjc.buyPrice.toFixed(2)}` : '78.00'} tr
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Bán ra</div>
+                <div className="text-lg font-bold text-red-600">
+                  {pnjPrices ? `${pnjPrices.sjc.sellPrice.toFixed(2)}` : '80.50'} tr
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:30 hôm nay
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">DOJI</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Vàng nhẫn 9999
-            </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              76,800,000 ₫
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:25 hôm nay
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">PNJ</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Vàng trang sức 24K
-            </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              75,500,000 ₫
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:20 hôm nay
-            </div>
+            {pnjPrices && (
+              <div className="text-xs text-gray-500">
+                Nguồn: PNJ • Cập nhật tự động
+              </div>
+            )}
           </div>
         </div>
+        
+        {!pnjPrices && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Mẹo:</strong> Nhấn nút &quot;Cập nhật từ PNJ&quot; để lấy giá vàng mới nhất từ trang web PNJ.
+              Giá được cập nhật tự động từ nguồn chính thức.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Assets List */}
