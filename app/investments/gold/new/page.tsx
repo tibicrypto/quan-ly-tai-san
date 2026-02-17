@@ -14,7 +14,6 @@ export default function NewGoldAssetPage() {
     weight: '',
     unit: 'lượng',
     purchasePrice: '',
-    currentPrice: '',
     vendor: 'SJC',
     purchaseDate: new Date().toISOString().split('T')[0],
     notes: '',
@@ -173,43 +172,23 @@ export default function NewGoldAssetPage() {
         <div className="space-y-4 border-t pt-6">
           <h2 className="text-xl font-semibold text-gray-900">Thông tin giá</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Giá mua (VND/đơn vị) *
-              </label>
-              <input
-                type="number"
-                name="purchasePrice"
-                required
-                step="1000"
-                value={formData.purchasePrice}
-                onChange={handleChange}
-                placeholder="75500000"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Giá mua trên 1 {formData.unit}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Giá hiện tại (VND/đơn vị)
-              </label>
-              <input
-                type="number"
-                name="currentPrice"
-                step="1000"
-                value={formData.currentPrice}
-                onChange={handleChange}
-                placeholder="78200000"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Giá thị trường hiện tại
-              </p>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Giá mua (VND/đơn vị) *
+            </label>
+            <input
+              type="number"
+              name="purchasePrice"
+              required
+              step="1000"
+              value={formData.purchasePrice}
+              onChange={handleChange}
+              placeholder="75500000"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Giá mua trên 1 {formData.unit}. Giá này sẽ được sử dụng làm giá hiện tại ban đầu.
+            </p>
           </div>
 
           <div>

@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
       weight,
       unit,
       purchasePrice,
-      currentPrice,
       vendor,
       purchaseDate,
       notes
@@ -52,7 +51,7 @@ export async function POST(request: NextRequest) {
         weight: parseFloat(weight),
         unit,
         purchasePrice: parseFloat(purchasePrice),
-        currentPrice: currentPrice ? parseFloat(currentPrice) : parseFloat(purchasePrice),
+        currentPrice: parseFloat(purchasePrice), // Use purchase price as initial current price
         vendor: vendor || 'Unknown',
         purchaseDate: new Date(purchaseDate),
         notes: notes || null
