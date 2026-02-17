@@ -5,6 +5,16 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Target, Home, GraduationCap, Plane, Car, Heart, DollarSign, Calendar, TrendingUp, ArrowLeft } from 'lucide-react'
 
+// Helper function to calculate months remaining between two dates
+// Note: Uses 30-day approximation for simplicity. For precise calculations,
+// consider using a date library like date-fns or moment.js
+const calculateMonthsRemaining = (deadline: string | Date): number => {
+  const deadlineDate = typeof deadline === 'string' ? new Date(deadline) : deadline
+  const now = new Date()
+  const diffMs = deadlineDate.getTime() - now.getTime()
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 30))
+}
+
 export default function NewGoalPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -44,9 +54,7 @@ export default function NewGoalPage() {
       const currentAmount = parseFloat(formData.currentAmount) || 0
       const monthlyContribution = parseFloat(formData.monthlyContribution) || 0
       
-      const deadline = new Date(formData.deadline)
-      const now = new Date()
-      const monthsRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30))
+      const monthsRemaining = calculateMonthsRemaining(formData.deadline)
       
       const progress = currentAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
       const requiredMonthly = monthsRemaining > 0 ? (targetAmount - currentAmount) / monthsRemaining : 0
@@ -95,9 +103,7 @@ export default function NewGoalPage() {
     if (formData.targetAmount && formData.deadline) {
       const target = parseFloat(formData.targetAmount)
       const current = parseFloat(formData.currentAmount) || 0
-      const deadline = new Date(formData.deadline)
-      const now = new Date()
-      const monthsLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30))
+      const monthsLeft = calculateMonthsRemaining(formData.deadline)
       
       if (monthsLeft > 0) {
         return ((target - current) / monthsLeft).toFixed(0)
@@ -306,7 +312,7 @@ export default function NewGoalPage() {
               <div>
                 <p className="text-teal-700">Thời gian còn lại:</p>
                 <p className="text-xl font-bold text-teal-900">
-                  {Math.ceil((new Date(formData.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30))} tháng
+                  {calculateMonthsRemaining(formData.deadline)} tháng
                 </p>
               </div>
               <div>

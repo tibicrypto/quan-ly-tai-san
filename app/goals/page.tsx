@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Target, Plus, Calendar, TrendingUp, DollarSign, Home, GraduationCap, Plane } from 'lucide-react'
 
@@ -18,6 +19,7 @@ interface Goal {
 }
 
 export default function GoalsPage() {
+  const router = useRouter()
   const [goals, setGoals] = useState<Goal[]>([
     {
       id: '1',
@@ -101,8 +103,8 @@ export default function GoalsPage() {
   }
 
   const handleAddGoal = () => {
-    // Navigate to add goal form
-    window.location.href = '/goals/new'
+    // Navigate to add goal form using Next.js router for client-side navigation
+    router.push('/goals/new')
   }
 
   return (
