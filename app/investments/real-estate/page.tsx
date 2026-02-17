@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Home, Plus, TrendingUp } from 'lucide-react'
+import { Home, Plus, TrendingUp, Loader2 } from 'lucide-react'
 
 interface RealEstateAsset {
   id: string
@@ -13,23 +13,30 @@ interface RealEstateAsset {
   purchasePrice: number
   currentPrice: number
   purchaseDate: string
-  rentalIncome?: number
+  rentalIncome?: number | null
 }
 
 export default function RealEstatePage() {
-  const [assets] = useState<RealEstateAsset[]>([
-    {
-      id: '1',
-      type: 'APARTMENT',
-      name: 'Căn hộ Vinhomes Central Park',
-      address: '208 Nguyễn Hữu Cảnh, Bình Thạnh, TP.HCM',
-      area: 75,
-      purchasePrice: 4500000000,
-      currentPrice: 5200000000,
-      purchaseDate: '2023-03-15',
-      rentalIncome: 25000000,
-    },
-  ])
+  const [assets, setAssets] = useState<RealEstateAsset[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/investments/real-estate')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+      }
+    } catch (error) {
+      console.error('Error fetching real estate assets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const totalValue = assets.reduce((sum, asset) => sum + asset.currentPrice, 0)
   const totalPnL = assets.reduce((sum, asset) => sum + (asset.currentPrice - asset.purchasePrice), 0)
@@ -103,7 +110,11 @@ export default function RealEstatePage() {
 
       {/* Assets List */}
       <div className="space-y-4">
-        {assets.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 flex justify-center items-center">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          </div>
+        ) : assets.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
             Chưa có bất động sản nào. Nhấn &quot;Thêm BĐS&quot; để bắt đầu.
           </div>

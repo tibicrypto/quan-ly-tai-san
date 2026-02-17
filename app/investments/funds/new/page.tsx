@@ -33,17 +33,16 @@ export default function NewFundAssetPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save fund asset
-      // const response = await fetch('/api/investments/funds', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      const response = await fetch('/api/investments/funds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        throw new Error('Failed to create fund asset')
+      }
       
-      // Navigate back to funds page
       router.push('/investments/funds')
     } catch (error) {
       console.error('Error creating fund asset:', error)

@@ -34,8 +34,21 @@ export default function NewRealEstateAssetPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save real estate asset
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('/api/investments/real-estate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          ownershipPercentage: formData.ownership === 'FULL' ? 100 : parseFloat(formData.ownership) || 100,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create real estate asset')
+      }
+
       router.push('/investments/real-estate')
     } catch (error) {
       console.error('Error creating real estate asset:', error)

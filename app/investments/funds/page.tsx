@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { TrendingUp, Plus, BarChart3 } from 'lucide-react'
+import { TrendingUp, Plus, BarChart3, Loader2 } from 'lucide-react'
 
 interface FundAsset {
   id: string
@@ -17,19 +17,26 @@ interface FundAsset {
 }
 
 export default function FundsPage() {
-  const [assets] = useState<FundAsset[]>([
-    {
-      id: '1',
-      name: 'DCDS - Dragon Capital Dividend Select',
-      fundCode: 'DCDS',
-      fundCompany: 'Dragon Capital',
-      type: 'OPEN_ENDED',
-      units: 1000,
-      avgNavPrice: 15250,
-      currentNav: 16800,
-      purchaseDate: '2024-01-10',
-    },
-  ])
+  const [assets, setAssets] = useState<FundAsset[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/investments/funds')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+      }
+    } catch (error) {
+      console.error('Error fetching fund assets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const totalValue = assets.reduce((sum, asset) => 
     sum + (asset.units * asset.currentNav), 0
@@ -242,7 +249,12 @@ export default function FundsPage() {
           Danh sách Quỹ sở hữu
         </h2>
         
-        {assets.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader2 className="w-16 h-16 text-green-600 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải dữ liệu...</p>
+          </div>
+        ) : assets.length === 0 ? (
           <div className="text-center py-12">
             <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">Chưa có quỹ đầu tư nào</p>

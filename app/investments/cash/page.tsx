@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Wallet, Plus, TrendingUp, TrendingDown } from 'lucide-react'
+import { Wallet, Plus, TrendingUp, TrendingDown, Loader2 } from 'lucide-react'
 
 interface CashAsset {
   id: string
@@ -13,22 +13,26 @@ interface CashAsset {
 }
 
 export default function CashPage() {
-  const [assets] = useState<CashAsset[]>([
-    {
-      id: '1',
-      name: 'Tiền mặt VND',
-      currency: 'VND',
-      amount: 50000000,
-      location: 'Nhà',
-    },
-    {
-      id: '2',
-      name: 'Tiền mặt USD',
-      currency: 'USD',
-      amount: 1000,
-      location: 'Két sắt',
-    },
-  ])
+  const [assets, setAssets] = useState<CashAsset[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/investments/cash')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+      }
+    } catch (error) {
+      console.error('Error fetching cash assets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const totalValueVND = assets.reduce((sum, asset) => {
     if (asset.currency === 'VND') {
@@ -90,7 +94,11 @@ export default function CashPage() {
           <h2 className="text-xl font-semibold text-gray-900">Danh sách tiền mặt</h2>
         </div>
         <div className="divide-y">
-          {assets.length === 0 ? (
+          {loading ? (
+            <div className="p-8 flex justify-center items-center">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+          ) : assets.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               Chưa có tài sản nào. Nhấn &quot;Thêm tiền mặt&quot; để bắt đầu.
             </div>

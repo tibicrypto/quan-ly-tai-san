@@ -35,17 +35,16 @@ export default function NewCryptoAssetPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save crypto asset
-      // const response = await fetch('/api/investments/crypto', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData),
-      // })
+      const response = await fetch('/api/investments/crypto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        throw new Error('Failed to create crypto asset')
+      }
       
-      // Navigate back to crypto page
       router.push('/investments/crypto')
     } catch (error) {
       console.error('Error creating crypto asset:', error)

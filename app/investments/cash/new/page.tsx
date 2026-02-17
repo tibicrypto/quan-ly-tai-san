@@ -29,8 +29,18 @@ export default function NewCashAssetPage() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save cash asset
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const response = await fetch('/api/investments/cash', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create cash asset')
+      }
+
       router.push('/investments/cash')
     } catch (error) {
       console.error('Error creating cash asset:', error)

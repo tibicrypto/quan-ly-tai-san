@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Bitcoin, TrendingUp, TrendingDown, AlertTriangle, Plus, RefreshCw } from 'lucide-react'
+import { Bitcoin, TrendingUp, TrendingDown, AlertTriangle, Plus, RefreshCw, Loader2 } from 'lucide-react'
 
 interface CryptoAsset {
   id: string
@@ -18,20 +18,32 @@ interface CryptoAsset {
 }
 
 export default function CryptoPage() {
-  const [assets, setAssets] = useState<CryptoAsset[]>([
-    {
-      id: '1',
-      name: 'Bitcoin',
-      symbol: 'BTC',
-      exchange: 'Binance',
-      balance: 0.05,
-      averagePrice: 45000,
-      currentPrice: 52000,
-      usdtVndRate: 24500,
-      pnl: 350,
-      pnlPercent: 15.56,
-    },
-  ])
+  const [assets, setAssets] = useState<CryptoAsset[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/investments/crypto')
+      if (response.ok) {
+        const data = await response.json()
+        // Calculate PnL for each asset
+        const assetsWithPnL = data.map((asset: any) => ({
+          ...asset,
+          pnl: (asset.currentPrice - asset.averagePrice) * asset.balance,
+          pnlPercent: ((asset.currentPrice - asset.averagePrice) / asset.averagePrice) * 100,
+        }))
+        setAssets(assetsWithPnL)
+      }
+    } catch (error) {
+      console.error('Error fetching crypto assets:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const totalValue = assets.reduce((sum, asset) => 
     sum + (asset.balance * asset.currentPrice * asset.usdtVndRate), 0
@@ -166,7 +178,12 @@ export default function CryptoPage() {
           Danh sách Tài sản
         </h2>
         
-        {assets.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader2 className="w-16 h-16 text-orange-600 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải dữ liệu...</p>
+          </div>
+        ) : assets.length === 0 ? (
           <div className="text-center py-12">
             <Bitcoin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">Chưa có tài sản crypto nào</p>
