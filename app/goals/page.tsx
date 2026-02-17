@@ -100,6 +100,13 @@ export default function GoalsPage() {
     return Math.ceil(diff / (1000 * 60 * 60 * 24 * 30))
   }
 
+  const handleAddGoal = () => {
+    // TODO: Navigate to add goal form or open modal
+    console.log('Opening add goal form...')
+    alert('Chức năng thêm mục tiêu mới sẽ được phát triển. Hiện tại có thể sử dụng API để thêm mục tiêu.')
+    // In a real app, this would navigate to /goals/new or open a modal
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -113,7 +120,10 @@ export default function GoalsPage() {
             Lập kế hoạch và theo dõi tiến độ đạt mục tiêu tài chính
           </p>
         </div>
-        <button className="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-colors flex items-center">
+        <button 
+          onClick={handleAddGoal}
+          className="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-colors flex items-center"
+        >
           <Plus className="w-5 h-5 mr-2" />
           Thêm mục tiêu
         </button>

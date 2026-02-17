@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, TrendingUp, CreditCard, Settings } from 'lucide-react'
+import { Home, TrendingUp, CreditCard, Settings, Scale, Target, BarChart3 } from 'lucide-react'
 
 export function Navigation() {
   const pathname = usePathname()
@@ -11,6 +11,9 @@ export function Navigation() {
     { href: '/', label: 'Trang chủ', icon: Home },
     { href: '/investments', label: 'Đầu tư', icon: TrendingUp },
     { href: '/credit-cards', label: 'Thẻ tín dụng', icon: CreditCard },
+    { href: '/rebalance', label: 'Tái cân bằng', icon: Scale },
+    { href: '/goals', label: 'Mục tiêu', icon: Target },
+    { href: '/reports', label: 'Báo cáo', icon: BarChart3 },
     { href: '/settings', label: 'Cài đặt', icon: Settings },
   ]
 

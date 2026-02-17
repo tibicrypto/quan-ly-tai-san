@@ -85,6 +85,13 @@ export default function RebalancePage() {
     return 'text-green-600'
   }
 
+  const handleRecalculate = () => {
+    // TODO: API call to recalculate allocations based on current portfolio values
+    console.log('Recalculating portfolio allocations...')
+    alert('Đang tính toán lại phân bổ danh mục...')
+    // In a real app, this would fetch fresh data from the API
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -98,7 +105,10 @@ export default function RebalancePage() {
             Điều chỉnh danh mục đầu tư theo mục tiêu phân bổ
           </p>
         </div>
-        <button className="bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-colors flex items-center">
+        <button 
+          onClick={handleRecalculate}
+          className="bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-colors flex items-center"
+        >
           <RefreshCw className="w-5 h-5 mr-2" />
           Tính toán lại
         </button>
