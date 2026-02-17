@@ -105,7 +105,7 @@ export default function RealEstatePage() {
       <div className="space-y-4">
         {assets.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
-            Chưa có bất động sản nào. Nhấn "Thêm BĐS" để bắt đầu.
+            Chưa có bất động sản nào. Nhấn &quot;Thêm BĐS&quot; để bắt đầu.
           </div>
         ) : (
           assets.map((asset) => {

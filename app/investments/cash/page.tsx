@@ -92,7 +92,7 @@ export default function CashPage() {
         <div className="divide-y">
           {assets.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              Chưa có tài sản nào. Nhấn "Thêm tiền mặt" để bắt đầu.
+              Chưa có tài sản nào. Nhấn &quot;Thêm tiền mặt&quot; để bắt đầu.
             </div>
           ) : (
             assets.map((asset) => (

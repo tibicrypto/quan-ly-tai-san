@@ -267,7 +267,7 @@ export default function RebalancePage() {
           <h3 className="text-lg font-semibold text-green-900 mb-3">💡 Lợi ích Tái cân bằng</h3>
           <ul className="space-y-2 text-sm text-green-800">
             <li>• Duy trì mức độ rủi ro mong muốn</li>
-            <li>• "Mua thấp, bán cao" tự động</li>
+            <li>• &quot;Mua thấp, bán cao&quot; tự động</li>
             <li>• Tối ưu hóa lợi nhuận dài hạn</li>
             <li>• Kỷ luật đầu tư, tránh cảm tính</li>
           </ul>
