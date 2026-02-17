@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 /**
  * API Route to fetch current gold prices from PNJ and save to database
@@ -48,29 +46,66 @@ async function fetchGoldPricesForDate(date: Date): Promise<PNJGoldPrices | null>
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7'
       }
     });
     
     if (!response.ok) {
+      console.error(`PNJ fetch failed with status: ${response.status}`);
       return null;
     }
     
     const html = await response.text();
+    console.log('Fetched HTML length:', html.length);
     
-    // Parse HTML to extract prices
-    // Looking for table rows with PNJ and SJC data
-    const pnjBuyMatch = html.match(/PNJ[\s\S]*?<td[^>]*>([\d.]+)<\/td>[\s\S]*?<td[^>]*>([\d.]+)<\/td>/i);
-    const sjcMatch = html.match(/SJC[\s\S]*?<td[^>]*>([\d.]+)<\/td>[\s\S]*?<td[^>]*>([\d.]+)<\/td>/i);
+    // More flexible regex patterns to match table data
+    // Try multiple patterns for better matching
+    let pnjBuyPrice: number | null = null;
+    let pnjSellPrice: number | null = null;
+    let sjcBuyPrice: number | null = null;
+    let sjcSellPrice: number | null = null;
     
-    if (!pnjBuyMatch && !sjcMatch) {
-      return null;
+    // Pattern 1: Direct table cell matching for PNJ
+    const pnjRowMatch = html.match(/PNJ.*?<tr[^>]*>[\s\S]*?<td[^>]*>([\d.,]+)<\/td>[\s\S]*?<td[^>]*>([\d.,]+)<\/td>/i);
+    if (pnjRowMatch) {
+      pnjBuyPrice = parsePrice(pnjRowMatch[1]);
+      pnjSellPrice = parsePrice(pnjRowMatch[2]);
+      console.log('PNJ prices found:', { buy: pnjBuyPrice, sell: pnjSellPrice });
     }
     
-    const pnjBuyPrice = pnjBuyMatch ? parsePrice(pnjBuyMatch[1]) : null;
-    const pnjSellPrice = pnjBuyMatch ? parsePrice(pnjBuyMatch[2]) : null;
-    const sjcBuyPrice = sjcMatch ? parsePrice(sjcMatch[1]) : null;
-    const sjcSellPrice = sjcMatch ? parsePrice(sjcMatch[2]) : null;
+    // Pattern 2: Direct table cell matching for SJC
+    const sjcRowMatch = html.match(/SJC.*?<tr[^>]*>[\s\S]*?<td[^>]*>([\d.,]+)<\/td>[\s\S]*?<td[^>]*>([\d.,]+)<\/td>/i);
+    if (sjcRowMatch) {
+      sjcBuyPrice = parsePrice(sjcRowMatch[1]);
+      sjcSellPrice = parsePrice(sjcRowMatch[2]);
+      console.log('SJC prices found:', { buy: sjcBuyPrice, sell: sjcSellPrice });
+    }
+    
+    // Fallback: Try to find any price-like numbers near PNJ/SJC text
+    if (!pnjBuyPrice || !pnjSellPrice) {
+      const pnjSection = html.match(/PNJ[\s\S]{0,500}?([\d.,]+)[\s\S]{0,50}?([\d.,]+)/i);
+      if (pnjSection) {
+        pnjBuyPrice = pnjBuyPrice || parsePrice(pnjSection[1]);
+        pnjSellPrice = pnjSellPrice || parsePrice(pnjSection[2]);
+        console.log('PNJ prices (fallback):', { buy: pnjBuyPrice, sell: pnjSellPrice });
+      }
+    }
+    
+    if (!sjcBuyPrice || !sjcSellPrice) {
+      const sjcSection = html.match(/SJC[\s\S]{0,500}?([\d.,]+)[\s\S]{0,50}?([\d.,]+)/i);
+      if (sjcSection) {
+        sjcBuyPrice = sjcBuyPrice || parsePrice(sjcSection[1]);
+        sjcSellPrice = sjcSellPrice || parsePrice(sjcSection[2]);
+        console.log('SJC prices (fallback):', { buy: sjcBuyPrice, sell: sjcSellPrice });
+      }
+    }
+    
+    if (!pnjBuyPrice && !sjcBuyPrice) {
+      console.error('No prices found in HTML');
+      return null;
+    }
     
     return {
       date: `${year}-${month}-${day}`,

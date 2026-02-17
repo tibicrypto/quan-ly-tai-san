@@ -61,8 +61,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(asset, { status: 201 })
   } catch (error) {
     console.error('Error creating gold asset:', error)
+    // Return detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to create gold asset' },
+      { error: 'Failed to create gold asset', details: errorMessage },
       { status: 500 }
     )
   }

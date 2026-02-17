@@ -39,14 +39,17 @@ export default function NewGoldAssetPage() {
       })
       
       if (!response.ok) {
-        throw new Error('Failed to create asset')
+        const errorData = await response.json()
+        console.error('API Error:', errorData)
+        throw new Error(errorData.details || errorData.error || 'Failed to create asset')
       }
       
       // Navigate back to gold page
       router.push('/investments/gold')
     } catch (error) {
       console.error('Error creating gold/silver asset:', error)
-      alert('Có lỗi xảy ra khi tạo tài sản. Vui lòng thử lại.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Có lỗi xảy ra khi tạo tài sản: ${errorMessage}. Vui lòng thử lại.`)
     } finally {
       setIsSubmitting(false)
     }
