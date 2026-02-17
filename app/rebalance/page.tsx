@@ -86,10 +86,48 @@ export default function RebalancePage() {
   }
 
   const handleRecalculate = () => {
-    // TODO: API call to recalculate allocations based on current portfolio values
+    // Recalculate allocations based on current portfolio values
     console.log('Recalculating portfolio allocations...')
-    alert('Đang tính toán lại phân bổ danh mục...')
-    // In a real app, this would fetch fresh data from the API
+    
+    // Simulate fetching fresh data and recalculating
+    const totalValue = allocations.reduce((sum, a) => sum + a.currentValue, 0)
+    
+    const updatedAllocations = allocations.map(allocation => {
+      const currentPercent = (allocation.currentValue / totalValue) * 100
+      const targetValue = (allocation.targetPercent / 100) * totalValue
+      const difference = allocation.currentValue - targetValue
+      const diffPercent = currentPercent - allocation.targetPercent
+      
+      let action: 'BUY' | 'SELL' | 'HOLD' = 'HOLD'
+      if (Math.abs(diffPercent) < 2) {
+        action = 'HOLD'
+      } else if (diffPercent > 0) {
+        action = 'SELL'
+      } else {
+        action = 'BUY'
+      }
+      
+      return {
+        ...allocation,
+        currentPercent: Math.round(currentPercent * 10) / 10,
+        targetValue: Math.round(targetValue),
+        difference: Math.round(difference),
+        action
+      }
+    })
+    
+    setAllocations(updatedAllocations)
+    
+    const needsRebalancing = updatedAllocations.some(a => a.action !== 'HOLD')
+    alert(
+      `Tính toán lại hoàn tất!\n\n` +
+      `Tổng giá trị danh mục: ${(totalValue / 1000000000).toFixed(2)} tỷ\n` +
+      `Trạng thái: ${needsRebalancing ? 'Cần tái cân bằng' : 'Đã cân bằng'}\n\n` +
+      updatedAllocations
+        .filter(a => a.action !== 'HOLD')
+        .map(a => `${a.name}: ${a.action === 'BUY' ? 'Mua thêm' : 'Bán bớt'} ${(Math.abs(a.difference) / 1000000).toFixed(0)} triệu`)
+        .join('\n')
+    )
   }
 
   return (

@@ -101,10 +101,8 @@ export default function GoalsPage() {
   }
 
   const handleAddGoal = () => {
-    // TODO: Navigate to add goal form or open modal
-    console.log('Opening add goal form...')
-    alert('Chức năng thêm mục tiêu mới sẽ được phát triển. Hiện tại có thể sử dụng API để thêm mục tiêu.')
-    // In a real app, this would navigate to /goals/new or open a modal
+    // Navigate to add goal form
+    window.location.href = '/goals/new'
   }
 
   return (
