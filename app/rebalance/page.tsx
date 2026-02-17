@@ -176,8 +176,15 @@ export default function RebalancePage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div 
-                        className={`bg-${allocation.color}-500 h-3 rounded-full transition-all`}
-                        style={{ width: `${allocation.currentPercent}%` }}
+                        className="h-3 rounded-full transition-all"
+                        style={{ 
+                          width: `${allocation.currentPercent}%`,
+                          backgroundColor: allocation.color === 'orange' ? '#f97316' :
+                                         allocation.color === 'yellow' ? '#eab308' :
+                                         allocation.color === 'green' ? '#22c55e' :
+                                         allocation.color === 'blue' ? '#3b82f6' :
+                                         allocation.color === 'purple' ? '#a855f7' : '#6b7280'
+                        }}
                       />
                     </div>
                   </div>
@@ -190,8 +197,15 @@ export default function RebalancePage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div 
-                        className={`bg-${allocation.color}-300 h-3 rounded-full transition-all`}
-                        style={{ width: `${allocation.targetPercent}%` }}
+                        className="h-3 rounded-full transition-all"
+                        style={{ 
+                          width: `${allocation.targetPercent}%`,
+                          backgroundColor: allocation.color === 'orange' ? '#fdba74' :
+                                         allocation.color === 'yellow' ? '#fde047' :
+                                         allocation.color === 'green' ? '#86efac' :
+                                         allocation.color === 'blue' ? '#93c5fd' :
+                                         allocation.color === 'purple' ? '#d8b4fe' : '#d1d5db'
+                        }}
                       />
                     </div>
                   </div>
