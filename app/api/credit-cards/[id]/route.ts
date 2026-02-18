@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 // GET /api/credit-cards/[id] - Fetch single credit card
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if DATABASE_URL is configured
@@ -18,9 +18,10 @@ export async function GET(
       )
     }
 
+    const { id } = await params
     const card = await prisma.creditCard.findUnique({
       where: {
-        id: params.id
+        id: id
       }
     })
 
@@ -47,7 +48,7 @@ export async function GET(
 // PUT /api/credit-cards/[id] - Update credit card
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if DATABASE_URL is configured
@@ -61,6 +62,7 @@ export async function PUT(
       )
     }
 
+    const { id } = await params
     const body = await request.json()
     const {
       bankName,
@@ -85,7 +87,7 @@ export async function PUT(
     // Update credit card in database
     const updatedCard = await prisma.creditCard.update({
       where: {
-        id: params.id
+        id: id
       },
       data: {
         bankName,
@@ -116,7 +118,7 @@ export async function PUT(
 // DELETE /api/credit-cards/[id] - Delete (deactivate) credit card
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if DATABASE_URL is configured
@@ -130,10 +132,11 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params
     // Soft delete by setting isActive to false
     const deletedCard = await prisma.creditCard.update({
       where: {
-        id: params.id
+        id: id
       },
       data: {
         isActive: false
