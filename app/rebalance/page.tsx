@@ -250,7 +250,7 @@ export default function RebalancePage() {
         )}
       </div>
 
-      {/* Settings Card */}
+      {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-3">⚙️ Cài đặt Tái cân bằng</h3>
@@ -268,9 +268,11 @@ export default function RebalancePage() {
               <span className="font-semibold text-blue-900">Bật</span>
             </div>
           </div>
-          <button className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
-            Chỉnh sửa cài đặt
-          </button>
+          <Link href="/settings">
+            <button className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors">
+              Chỉnh sửa cài đặt
+            </button>
+          </Link>
         </div>
 
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
