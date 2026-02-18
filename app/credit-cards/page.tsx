@@ -84,53 +84,16 @@ export default function CreditCardsPage() {
         </div>
 
         {showOptimizer && amount && (
-          <div className="mt-4 space-y-3">
-            <h3 className="font-semibold text-lg">Kết quả phân tích:</h3>
-            
-            {/* Best Card */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 border-2 border-white">
-              <div className="flex items-center justify-between mb-2">
-                <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
-                  🏆 TỐI ƯU NHẤT
-                </span>
-                <span className="text-2xl font-bold">43 ngày</span>
-              </div>
-              <h4 className="font-semibold text-lg">
-                VIB Online Plus (****1234)
-              </h4>
-              <p className="text-sm text-green-100 mt-2">
-                ✓ Vừa qua ngày sao kê (20 hàng tháng)
+          <div className="mt-4">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 text-center">
+              <p className="text-lg font-semibold mb-2">
+                Chức năng đang được phát triển
               </p>
               <p className="text-sm text-green-100">
-                ✓ Hạn thanh toán: 05/04/2026
+                Tính năng Smart Swipe Optimizer sẽ phân tích các thẻ của bạn và gợi ý thẻ tối ưu nhất để thanh toán.
               </p>
-              <p className="text-sm text-green-100">
-                ✓ Bạn có thể giữ tiền mặt thêm 43 ngày!
-              </p>
-              
-              <div className="mt-3 bg-white/10 rounded-lg p-3">
-                <p className="text-sm font-semibold mb-1">💡 Gợi ý tối ưu:</p>
-                <p className="text-xs text-green-50">
-                  Với {parseInt(amount).toLocaleString('vi-VN')} ₫, nếu gửi tiết kiệm kỳ hạn 1 tháng 
-                  (lãi suất 4.5%/năm), bạn sẽ kiếm được khoảng {Math.round(parseInt(amount) * 0.045 / 12).toLocaleString('vi-VN')} ₫ 
-                  thay vì trả ngay cho ngân hàng.
-                </p>
-              </div>
-            </div>
-
-            {/* Alternative Card */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="bg-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm font-bold">
-                  #2 Lựa chọn thay thế
-                </span>
-                <span className="text-xl font-bold">18 ngày</span>
-              </div>
-              <h4 className="font-semibold">
-                Techcombank Cash Back (****5678)
-              </h4>
-              <p className="text-sm text-green-100 mt-1">
-                Thời gian miễn lãi ngắn hơn, không khuyến nghị
+              <p className="text-xs text-green-50 mt-2">
+                Vui lòng thêm thẻ tín dụng để sử dụng tính năng này.
               </p>
             </div>
           </div>

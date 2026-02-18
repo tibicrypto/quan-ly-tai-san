@@ -20,56 +20,8 @@ interface Goal {
 
 export default function GoalsPage() {
   const router = useRouter()
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: '1',
-      name: 'Nghỉ hưu sớm',
-      type: 'RETIREMENT',
-      targetAmount: 5000000000,
-      currentAmount: 1200000000,
-      deadline: '2045-12-31',
-      priority: 'HIGH',
-      monthlyContribution: 15000000,
-      progress: 24,
-      icon: Target
-    },
-    {
-      id: '2',
-      name: 'Mua nhà',
-      type: 'HOUSE',
-      targetAmount: 2000000000,
-      currentAmount: 600000000,
-      deadline: '2028-12-31',
-      priority: 'HIGH',
-      monthlyContribution: 25000000,
-      progress: 30,
-      icon: Home
-    },
-    {
-      id: '3',
-      name: 'Học phí con',
-      type: 'EDUCATION',
-      targetAmount: 500000000,
-      currentAmount: 150000000,
-      deadline: '2030-09-01',
-      priority: 'MEDIUM',
-      monthlyContribution: 5000000,
-      progress: 30,
-      icon: GraduationCap
-    },
-    {
-      id: '4',
-      name: 'Du lịch châu Âu',
-      type: 'TRAVEL',
-      targetAmount: 150000000,
-      currentAmount: 80000000,
-      deadline: '2027-06-30',
-      priority: 'LOW',
-      monthlyContribution: 3000000,
-      progress: 53,
-      icon: Plane
-    },
-  ])
+  const [goals, setGoals] = useState<Goal[]>([])
+  // TODO: Fetch goals from database
 
   const totalGoals = goals.length
   const completedGoals = goals.filter(g => g.progress >= 100).length
@@ -130,6 +82,7 @@ export default function GoalsPage() {
       </div>
 
       {/* Summary Stats */}
+      {goals.length > 0 && (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
@@ -171,7 +124,7 @@ export default function GoalsPage() {
             </div>
           </div>
           <p className="text-sm text-green-600 mt-2">
-            {((totalCurrent / totalTarget) * 100).toFixed(0)}% hoàn thành
+            {totalTarget > 0 ? ((totalCurrent / totalTarget) * 100).toFixed(0) : 0}% hoàn thành
           </p>
         </div>
 
@@ -189,10 +142,29 @@ export default function GoalsPage() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Goals List */}
       <div className="space-y-4">
-        {goals.map((goal) => {
+        {goals.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <Target className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Chưa có mục tiêu nào
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Bắt đầu lập kế hoạch tài chính bằng cách tạo mục tiêu đầu tiên của bạn
+            </p>
+            <button
+              onClick={handleAddGoal}
+              className="bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-colors inline-flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Tạo mục tiêu đầu tiên</span>
+            </button>
+          </div>
+        ) : (
+        goals.map((goal) => {
           const Icon = goal.icon
           const monthsLeft = getMonthsRemaining(goal.deadline)
           const monthlyNeeded = (goal.targetAmount - goal.currentAmount) / monthsLeft
@@ -293,6 +265,7 @@ export default function GoalsPage() {
             </div>
           )
         })}
+        )}
       </div>
 
       {/* Tips Card */}
