@@ -128,45 +128,35 @@ export default function CryptoPage() {
         </div>
       </div>
 
-      {/* Exchange Connections */}
+      {/* Binance Integration */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Kết nối Sàn giao dịch
+          Tích hợp Binance
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-500 hover:bg-orange-50 transition-colors cursor-pointer">
-            <div className="text-4xl mb-2">🟡</div>
-            <div className="font-semibold text-gray-900">Binance</div>
-            <div className="text-sm text-gray-500 mt-1">Chưa kết nối</div>
-            <button className="mt-2 text-sm text-orange-600 hover:text-orange-700 font-medium">
-              + Kết nối API
-            </button>
-          </div>
-
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-500 hover:bg-orange-50 transition-colors cursor-pointer">
-            <div className="text-4xl mb-2">⚫</div>
-            <div className="font-semibold text-gray-900">OKX</div>
-            <div className="text-sm text-gray-500 mt-1">Chưa kết nối</div>
-            <button className="mt-2 text-sm text-orange-600 hover:text-orange-700 font-medium">
-              + Kết nối API
-            </button>
-          </div>
-
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-500 hover:bg-orange-50 transition-colors cursor-pointer">
-            <div className="text-4xl mb-2">🟠</div>
-            <div className="font-semibold text-gray-900">Bybit</div>
-            <div className="text-sm text-gray-500 mt-1">Chưa kết nối</div>
-            <button className="mt-2 text-sm text-orange-600 hover:text-orange-700 font-medium">
-              + Kết nối API
-            </button>
-          </div>
-        </div>
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <div className="flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-yellow-800">
-              <strong>Lưu ý bảo mật:</strong> Chỉ sử dụng API Key ở chế độ Read-only. 
-              Không bao giờ cấp quyền rút tiền hoặc giao dịch cho API Key.
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-start space-x-4">
+            <div className="text-5xl">🟡</div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">Kết nối Binance API</h3>
+              <p className="text-sm text-gray-700 mb-3">
+                Binance API Key được cấu hình an toàn thông qua biến môi trường (environment variables) 
+                thay vì lưu trong database để đảm bảo bảo mật tối đa.
+              </p>
+              <div className="bg-white rounded-md p-3 border border-yellow-200">
+                <p className="text-xs font-mono text-gray-600 mb-1">
+                  <strong>BINANCE_API_KEY</strong>=your_api_key_here
+                </p>
+                <p className="text-xs font-mono text-gray-600">
+                  <strong>BINANCE_API_SECRET</strong>=your_api_secret_here
+                </p>
+              </div>
+              <div className="mt-3 flex items-start space-x-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-gray-600">
+                  <strong>Bảo mật:</strong> Chỉ sử dụng API Key ở chế độ Read-only (chỉ đọc). 
+                  Không bao giờ cấp quyền rút tiền hoặc giao dịch.
+                </p>
+              </div>
             </div>
           </div>
         </div>

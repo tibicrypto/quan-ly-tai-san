@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings as SettingsIcon, Bell, DollarSign, Key, Scale } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, DollarSign, Scale } from 'lucide-react'
 
 export default function SettingsPage() {
   const [defaultUsdtRate, setDefaultUsdtRate] = useState('24000')
@@ -125,46 +125,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* API Keys */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-green-100 p-2 rounded-lg">
-            <Key className="w-6 h-6 text-green-600" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Quản lý API Keys
-          </h2>
-        </div>
 
-        <div className="space-y-4">
-          <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-2">
-              Kết nối sàn giao dịch Crypto
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Kết nối API (Read-only) để tự động cập nhật số dư và giá
-            </p>
-            <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm Binance API Key
-              </button>
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm OKX API Key
-              </button>
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm Bybit API Key
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>⚠️ Lưu ý bảo mật:</strong> Chỉ nhập API Key ở chế độ Read-only (chỉ đọc). 
-              Tuyệt đối không sử dụng API Key có quyền rút tiền hoặc giao dịch.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Rebalance Settings */}
       <div className="bg-white rounded-lg shadow-md p-6">
