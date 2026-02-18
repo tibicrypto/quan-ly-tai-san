@@ -32,14 +32,28 @@ export default function NewCreditCardPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // TODO: API call to save credit card
-    console.log('Submitting credit card:', formData)
+    try {
+      const response = await fetch('/api/credit-cards', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.details || error.error || 'Failed to save credit card')
+      }
+
+      // Success - redirect to credit cards page
       router.push('/credit-cards')
-    }, 1000)
+    } catch (error: any) {
+      console.error('Error saving credit card:', error)
+      alert(`Có lỗi xảy ra khi lưu thẻ: ${error.message}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Popular Vietnamese banks

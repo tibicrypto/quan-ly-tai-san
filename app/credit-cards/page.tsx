@@ -1,15 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { CreditCard, Plus, Zap, TrendingUp, Calendar } from 'lucide-react'
+import { CreditCard, Plus, Zap, TrendingUp, Calendar, Loader2 } from 'lucide-react'
 
 export default function CreditCardsPage() {
   const [showOptimizer, setShowOptimizer] = useState(false)
   const [amount, setAmount] = useState('')
+  const [cards, setCards] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // TODO: Fetch cards from database
-  const cards: any[] = []
+  // Fetch cards from database
+  useEffect(() => {
+    const fetchCards = async () => {
+      try {
+        const response = await fetch('/api/credit-cards')
+        if (response.ok) {
+          const data = await response.json()
+          setCards(data)
+        }
+      } catch (error) {
+        console.error('Error fetching credit cards:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCards()
+  }, [])
 
   return (
     <div className="space-y-8">
@@ -126,7 +144,12 @@ export default function CreditCardsPage() {
           Danh sách Thẻ ({cards.length})
         </h2>
         
-        {cards.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <Loader2 className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải danh sách thẻ...</p>
+          </div>
+        ) : cards.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <CreditCard className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">
