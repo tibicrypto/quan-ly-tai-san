@@ -7,6 +7,8 @@ import { CreditCard, Plus, Zap, TrendingUp, Calendar, Loader2 } from 'lucide-rea
 export default function CreditCardsPage() {
   const [showOptimizer, setShowOptimizer] = useState(false)
   const [amount, setAmount] = useState('')
+  const [optimizerResult, setOptimizerResult] = useState<any>(null)
+  const [isCalculating, setIsCalculating] = useState(false)
   const [cards, setCards] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -28,6 +30,36 @@ export default function CreditCardsPage() {
 
     fetchCards()
   }, [])
+
+  const handleOptimize = async () => {
+    if (!amount || parseFloat(amount) <= 0) {
+      alert('Vui lòng nhập số tiền hợp lệ')
+      return
+    }
+
+    setIsCalculating(true)
+    try {
+      const response = await fetch('/api/credit-cards/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: parseFloat(amount) })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setOptimizerResult(data)
+        setShowOptimizer(true)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Có lỗi xảy ra')
+      }
+    } catch (error) {
+      console.error('Error optimizing:', error)
+      alert('Có lỗi xảy ra khi tính toán')
+    } finally {
+      setIsCalculating(false)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -75,27 +107,58 @@ export default function CreditCardsPage() {
               className="flex-1 px-4 py-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
             />
             <button
-              onClick={() => setShowOptimizer(true)}
-              className="bg-white text-green-600 px-6 py-2 rounded-lg hover:bg-green-50 transition-colors font-semibold"
+              onClick={handleOptimize}
+              disabled={isCalculating}
+              className="bg-white text-green-600 px-6 py-2 rounded-lg hover:bg-green-50 transition-colors font-semibold disabled:opacity-50"
             >
-              Tính toán
+              {isCalculating ? 'Đang tính...' : 'Tính toán'}
             </button>
           </div>
         </div>
 
-        {showOptimizer && amount && (
+        {showOptimizer && optimizerResult && (
           <div className="mt-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 text-center">
-              <p className="text-lg font-semibold mb-2">
-                Chức năng đang được phát triển
-              </p>
-              <p className="text-sm text-green-100">
-                Tính năng Smart Swipe Optimizer sẽ phân tích các thẻ của bạn và gợi ý thẻ tối ưu nhất để thanh toán.
-              </p>
-              <p className="text-xs text-green-50 mt-2">
-                Vui lòng thêm thẻ tín dụng để sử dụng tính năng này.
-              </p>
-            </div>
+            {optimizerResult.recommendedCard ? (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-4 flex items-center">
+                  <TrendingUp className="w-6 h-6 mr-2" />
+                  Gợi ý tối ưu
+                </h3>
+                <div className="bg-white text-gray-900 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-gray-600 mb-2">Thẻ được gợi ý:</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {optimizerResult.recommendedCard.bankName} {optimizerResult.recommendedCard.cardName}
+                  </p>
+                  <p className="text-gray-700 mt-1">****{optimizerResult.recommendedCard.lastFourDigits}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600">Thời gian miễn lãi</p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {optimizerResult.recommendedCard.interestFreeDays} ngày
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">Số tiền giao dịch</p>
+                      <p className="text-xl font-semibold">
+                        {parseFloat(amount).toLocaleString('vi-VN')} ₫
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-green-50">
+                  {optimizerResult.message}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-6 text-center">
+                <p className="text-lg font-semibold mb-2">
+                  {optimizerResult.message || 'Chưa có thẻ tín dụng nào'}
+                </p>
+                <p className="text-sm text-green-100">
+                  {optimizerResult.hint || 'Vui lòng thêm thẻ tín dụng để sử dụng tính năng này.'}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

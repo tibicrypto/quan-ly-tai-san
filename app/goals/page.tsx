@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Target, Plus, Calendar, TrendingUp, DollarSign, Home, GraduationCap, Plane } from 'lucide-react'
+import { Target, Plus, Calendar, TrendingUp, DollarSign, Home, GraduationCap, Plane, Car, Heart, Loader2 } from 'lucide-react'
 
 interface Goal {
   id: string
@@ -13,15 +13,49 @@ interface Goal {
   currentAmount: number
   deadline: string
   priority: string
-  monthlyContribution: number
-  progress: number
-  icon: any
+  monthlyContribution: number | null
+  isCompleted: boolean
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+const getGoalIcon = (type: string) => {
+  switch (type) {
+    case 'RETIREMENT': return Target
+    case 'HOUSE': return Home
+    case 'EDUCATION': return GraduationCap
+    case 'TRAVEL': return Plane
+    case 'CAR': return Car
+    case 'EMERGENCY': return Heart
+    default: return DollarSign
+  }
 }
 
 export default function GoalsPage() {
   const router = useRouter()
   const [goals, setGoals] = useState<Goal[]>([])
-  // TODO: Fetch goals from database
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchGoals()
+  }, [])
+
+  const fetchGoals = async () => {
+    try {
+      const response = await fetch('/api/goals')
+      if (response.ok) {
+        const data = await response.json()
+        setGoals(data)
+      } else {
+        console.error('Failed to fetch goals')
+      }
+    } catch (error) {
+      console.error('Error fetching goals:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const totalGoals = goals.length
   const completedGoals = goals.filter(g => g.progress >= 100).length
@@ -146,7 +180,12 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       <div className="space-y-4">
-        {goals.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <Loader2 className="w-12 h-12 text-teal-500 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải danh sách mục tiêu...</p>
+          </div>
+        ) : goals.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <Target className="w-20 h-20 text-gray-300 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -165,12 +204,14 @@ export default function GoalsPage() {
           </div>
         ) : (
         goals.map((goal) => {
-          const Icon = goal.icon
+          const Icon = getGoalIcon(goal.type)
           const monthsLeft = getMonthsRemaining(goal.deadline)
-          const monthlyNeeded = (goal.targetAmount - goal.currentAmount) / monthsLeft
+          const monthlyNeeded = monthsLeft > 0 ? (goal.targetAmount - goal.currentAmount) / monthsLeft : 0
+          const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
 
           return (
-            <div key={goal.id} className="bg-white rounded-lg shadow-md p-6">
+            <Link href={`/goals/${goal.id}`} key={goal.id}>
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start space-x-4">
                   <div className="bg-teal-100 p-3 rounded-lg">
@@ -190,7 +231,7 @@ export default function GoalsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-600">Tiến độ</p>
-                  <p className="text-2xl font-bold text-teal-600">{goal.progress}%</p>
+                  <p className="text-2xl font-bold text-teal-600">{progress.toFixed(0)}%</p>
                 </div>
               </div>
 
@@ -199,11 +240,11 @@ export default function GoalsPage() {
                 <div className="w-full bg-gray-200 rounded-full h-4">
                   <div 
                     className="bg-teal-500 h-4 rounded-full transition-all flex items-center justify-end pr-2"
-                    style={{ width: `${Math.min(goal.progress, 100)}%` }}
+                    style={{ width: `${Math.min(progress, 100)}%` }}
                   >
-                    {goal.progress >= 10 && (
+                    {progress >= 10 && (
                       <span className="text-xs text-white font-semibold">
-                        {goal.progress}%
+                        {progress.toFixed(0)}%
                       </span>
                     )}
                   </div>
@@ -239,6 +280,7 @@ export default function GoalsPage() {
               </div>
 
               {/* Current Monthly Contribution */}
+              {goal.monthlyContribution && (
               <div className="mt-4 bg-teal-50 border border-teal-200 rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -262,7 +304,9 @@ export default function GoalsPage() {
                   )}
                 </div>
               </div>
+              )}
             </div>
+            </Link>
           )
         })
         )}

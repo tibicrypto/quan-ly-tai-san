@@ -49,40 +49,22 @@ export default function NewGoalPage() {
     setLoading(true)
 
     try {
-      // Calculate derived fields
-      const targetAmount = parseFloat(formData.targetAmount)
-      const currentAmount = parseFloat(formData.currentAmount) || 0
-      const monthlyContribution = parseFloat(formData.monthlyContribution) || 0
-      
-      const monthsRemaining = calculateMonthsRemaining(formData.deadline)
-      
-      const progress = currentAmount > 0 ? (currentAmount / targetAmount) * 100 : 0
-      const requiredMonthly = monthsRemaining > 0 ? (targetAmount - currentAmount) / monthsRemaining : 0
+      const response = await fetch('/api/goals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      const goalData = {
-        ...formData,
-        targetAmount,
-        currentAmount,
-        monthlyContribution,
-        progress: Math.round(progress * 10) / 10,
-        requiredMonthly: Math.round(requiredMonthly),
-        monthsRemaining,
+      if (response.ok) {
+        const goal = await response.json()
+        alert(`Đã tạo mục tiêu: ${goal.name}`)
+        router.push('/goals')
+      } else {
+        const error = await response.json()
+        alert(`Có lỗi xảy ra: ${error.error || 'Vui lòng thử lại'}`)
       }
-
-      // TODO: API call to save goal
-      console.log('Saving goal:', goalData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      alert(`Đã thêm mục tiêu: ${formData.name}\n\n` +
-            `Số tiền mục tiêu: ${(targetAmount / 1000000000).toFixed(2)} tỷ\n` +
-            `Tiến độ hiện tại: ${progress.toFixed(1)}%\n` +
-            `Cần đóng góp: ${(requiredMonthly / 1000000).toFixed(1)} triệu/tháng\n` +
-            `Thời gian còn lại: ${monthsRemaining} tháng`)
-      
-      // Navigate back to goals page
-      router.push('/goals')
     } catch (error) {
       console.error('Error saving goal:', error)
       alert('Có lỗi xảy ra khi lưu mục tiêu')
