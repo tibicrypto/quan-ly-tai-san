@@ -8,27 +8,8 @@ export default function CreditCardsPage() {
   const [showOptimizer, setShowOptimizer] = useState(false)
   const [amount, setAmount] = useState('')
 
-  // Sample data - would come from database in real app
-  const cards = [
-    {
-      id: '1',
-      bankName: 'VIB',
-      cardName: 'Online Plus',
-      lastFourDigits: '1234',
-      statementDay: 20,
-      interestFreeDays: 55,
-      paymentDueDays: 15,
-    },
-    {
-      id: '2',
-      bankName: 'Techcombank',
-      cardName: 'Cash Back',
-      lastFourDigits: '5678',
-      statementDay: 25,
-      interestFreeDays: 45,
-      paymentDueDays: 15,
-    },
-  ]
+  // TODO: Fetch cards from database
+  const cards: any[] = []
 
   return (
     <div className="space-y-8">
@@ -51,7 +32,8 @@ export default function CreditCardsPage() {
       </div>
 
       {/* Smart Swipe Optimizer */}
-      <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-lg shadow-lg p-6 text-white">
+      {cards.length > 0 && (
+        <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-lg shadow-lg p-6 text-white">
         <div className="flex items-center space-x-3 mb-4">
           <Zap className="w-8 h-8" />
           <div>
@@ -136,6 +118,7 @@ export default function CreditCardsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Cards List */}
       <div>

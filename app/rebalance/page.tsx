@@ -17,63 +17,8 @@ interface AllocationTarget {
 }
 
 export default function RebalancePage() {
-  const [allocations, setAllocations] = useState<AllocationTarget[]>([
-    {
-      assetClass: 'CRYPTO',
-      name: 'Tiền mã hóa',
-      targetPercent: 20,
-      currentPercent: 25,
-      currentValue: 125000000,
-      targetValue: 100000000,
-      difference: -25000000,
-      action: 'SELL',
-      color: 'orange'
-    },
-    {
-      assetClass: 'GOLD_SILVER',
-      name: 'Vàng & Bạc',
-      targetPercent: 15,
-      currentPercent: 12,
-      currentValue: 60000000,
-      targetValue: 75000000,
-      difference: 15000000,
-      action: 'BUY',
-      color: 'yellow'
-    },
-    {
-      assetClass: 'FUNDS',
-      name: 'Quỹ đầu tư',
-      targetPercent: 30,
-      currentPercent: 28,
-      currentValue: 140000000,
-      targetValue: 150000000,
-      difference: 10000000,
-      action: 'BUY',
-      color: 'green'
-    },
-    {
-      assetClass: 'CASH',
-      name: 'Tiền mặt',
-      targetPercent: 10,
-      currentPercent: 10,
-      currentValue: 50000000,
-      targetValue: 50000000,
-      difference: 0,
-      action: 'HOLD',
-      color: 'blue'
-    },
-    {
-      assetClass: 'REAL_ESTATE',
-      name: 'Bất động sản',
-      targetPercent: 25,
-      currentPercent: 25,
-      currentValue: 125000000,
-      targetValue: 125000000,
-      difference: 0,
-      action: 'HOLD',
-      color: 'purple'
-    },
-  ])
+  // TODO: Fetch allocations from database
+  const [allocations, setAllocations] = useState<AllocationTarget[]>([])
 
   const totalPortfolioValue = allocations.reduce((sum, a) => sum + a.currentValue, 0)
   const isBalanced = allocations.every(a => Math.abs(a.currentPercent - a.targetPercent) < 2)
@@ -86,6 +31,11 @@ export default function RebalancePage() {
   }
 
   const handleRecalculate = () => {
+    if (allocations.length === 0) {
+      alert('Chưa có dữ liệu phân bổ danh mục. Vui lòng thêm tài sản trước.')
+      return
+    }
+    
     // Recalculate allocations based on current portfolio values
     console.log('Recalculating portfolio allocations...')
     
@@ -184,8 +134,19 @@ export default function RebalancePage() {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Phân bổ Hiện tại vs Mục tiêu</h2>
         
-        <div className="space-y-6">
-          {allocations.map((allocation) => {
+        {allocations.length === 0 ? (
+          <div className="text-center py-12">
+            <Scale className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">
+              Chưa có dữ liệu phân bổ danh mục
+            </p>
+            <p className="text-sm text-gray-500">
+              Vui lòng thêm tài sản vào danh mục để bắt đầu tái cân bằng
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {allocations.map((allocation) => {
             const diffPercent = allocation.currentPercent - allocation.targetPercent
             const isOverweight = diffPercent > 0
             
@@ -285,7 +246,8 @@ export default function RebalancePage() {
               </div>
             )
           })}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Settings Card */}
