@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Coins, Plus, TrendingUp } from 'lucide-react'
+import { Coins, Plus, TrendingUp, RefreshCw } from 'lucide-react'
 
 interface GoldSilverAsset {
   id: string
@@ -16,20 +16,88 @@ interface GoldSilverAsset {
   purchaseDate: string
 }
 
+interface PNJGoldPrices {
+  date: string
+  pnj: { type: string; buyPrice: number; sellPrice: number }
+  sjc: { type: string; buyPrice: number; sellPrice: number }
+  timestamp: string
+}
+
 export default function GoldPage() {
-  const [assets] = useState<GoldSilverAsset[]>([
-    {
-      id: '1',
-      type: 'SJC_GOLD_BAR',
-      name: 'Vàng SJC 1 lượng',
-      weight: 1,
-      unit: 'lượng',
-      purchasePrice: 75500000,
-      currentPrice: 78200000,
-      vendor: 'SJC',
-      purchaseDate: '2024-01-15',
-    },
-  ])
+  const [assets, setAssets] = useState<GoldSilverAsset[]>([])
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true)
+  const [pnjPrices, setPnjPrices] = useState<PNJGoldPrices | null>(null)
+  const [isLoadingPrices, setIsLoadingPrices] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<string | null>(null)
+
+  // Fetch assets from database
+  useEffect(() => {
+    fetchAssets()
+  }, [])
+
+  const fetchAssets = async () => {
+    setIsLoadingAssets(true)
+    try {
+      const response = await fetch('/api/investments/gold')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+      } else {
+        console.error('Failed to fetch gold assets')
+      }
+    } catch (error) {
+      console.error('Error fetching gold assets:', error)
+    } finally {
+      setIsLoadingAssets(false)
+    }
+  }
+
+  const fetchPNJPrices = async () => {
+    setIsLoadingPrices(true)
+    try {
+      // First fetch the prices from PNJ
+      const fetchResponse = await fetch('/api/gold-prices/pnj')
+      if (!fetchResponse.ok) {
+        const errorData = await fetchResponse.json()
+        console.error('PNJ fetch error:', errorData)
+        alert(`Không thể lấy giá vàng từ PNJ: ${errorData.error || 'Unknown error'}. Vui lòng thử lại.`)
+        return
+      }
+      
+      const data = await fetchResponse.json()
+      setPnjPrices(data)
+      setLastUpdate(new Date().toLocaleTimeString('vi-VN'))
+      
+      // Then save to database and update assets
+      const saveResponse = await fetch('/api/gold-prices/pnj', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (saveResponse.ok) {
+        const saveResult = await saveResponse.json()
+        console.log('Prices saved to database:', saveResult)
+        
+        // Refresh assets to show updated prices
+        await fetchAssets()
+        
+        // Show success message
+        alert(`Đã cập nhật giá vàng vào database!\n- Vàng trang sức: ${saveResult.assetsUpdated.jewelryGold} tài sản\n- Vàng miếng SJC: ${saveResult.assetsUpdated.sjcGoldBars} tài sản`)
+      } else {
+        const saveError = await saveResponse.json()
+        console.error('Save error:', saveError)
+        alert(`Không thể lưu giá vào database: ${saveError.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error fetching PNJ prices:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`Lỗi khi lấy giá vàng: ${errorMessage}. Vui lòng kiểm tra kết nối internet.`)
+    } finally {
+      setIsLoadingPrices(false)
+    }
+  }
 
   const totalValue = assets.reduce((sum, asset) => 
     sum + (asset.weight * asset.currentPrice), 0
@@ -107,72 +175,120 @@ export default function GoldPage() {
 
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg shadow-lg p-6 text-white">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-amber-100">Giá SJC hôm nay</span>
-            <Coins className="w-5 h-5" />
+            <span className="text-sm text-amber-100">Giá PNJ hôm nay</span>
+            <button
+              onClick={fetchPNJPrices}
+              disabled={isLoadingPrices}
+              className="text-white hover:bg-amber-700 p-1 rounded transition-colors disabled:opacity-50"
+              title="Cập nhật giá từ PNJ"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingPrices ? 'animate-spin' : ''}`} />
+            </button>
           </div>
           <div className="text-xl font-bold">
-            78.2 tr/lượng
+            {pnjPrices ? `${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')} ₫/lượng` : '78,200,000 ₫/lượng'}
           </div>
           <div className="text-sm text-amber-100 mt-2">
-            Mua: 76.8 tr • Bán: 78.2 tr
+            {pnjPrices 
+              ? `Mua: ${(pnjPrices.pnj.buyPrice * 1000000).toLocaleString('vi-VN')} ₫ • Bán: ${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')} ₫`
+              : 'Mua: 76,800,000 ₫ • Bán: 78,200,000 ₫'
+            }
           </div>
+          {lastUpdate && (
+            <div className="text-xs text-amber-100 mt-1">
+              Cập nhật: {lastUpdate}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Price Sources */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Nguồn giá cập nhật
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Nguồn giá cập nhật
+          </h2>
+          <button
+            onClick={fetchPNJPrices}
+            disabled={isLoadingPrices}
+            className="flex items-center space-x-2 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoadingPrices ? 'animate-spin' : ''}`} />
+            <span>{isLoadingPrices ? 'Đang cập nhật...' : 'Cập nhật từ PNJ'}</span>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border border-yellow-300 rounded-lg p-4 bg-yellow-50">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">SJC</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
+              <span className="font-semibold text-gray-900">PNJ - Vàng trang sức</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                {pnjPrices ? 'Đã cập nhật' : 'Chưa cập nhật'}
+              </span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 mb-2">
+              Giá vàng 24K tại PNJ
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <div className="text-xs text-gray-500">Mua vào</div>
+                <div className="text-lg font-bold text-green-600">
+                  {pnjPrices ? `${(pnjPrices.pnj.buyPrice * 1000000).toLocaleString('vi-VN')}` : '76,800,000'} ₫
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Bán ra</div>
+                <div className="text-lg font-bold text-red-600">
+                  {pnjPrices ? `${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')}` : '78,200,000'} ₫
+                </div>
+              </div>
+            </div>
+            {pnjPrices && (
+              <div className="text-xs text-gray-500">
+                Ngày: {pnjPrices.date} • {new Date(pnjPrices.timestamp).toLocaleTimeString('vi-VN')}
+              </div>
+            )}
+          </div>
+
+          <div className="border border-yellow-300 rounded-lg p-4 bg-yellow-50">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-gray-900">SJC - Vàng miếng</span>
+              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                {pnjPrices ? 'Đã cập nhật' : 'Chưa cập nhật'}
+              </span>
+            </div>
+            <div className="text-sm text-gray-600 mb-2">
               Vàng miếng SJC 1 lượng
             </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              78,200,000 ₫
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <div className="text-xs text-gray-500">Mua vào</div>
+                <div className="text-lg font-bold text-green-600">
+                  {pnjPrices ? `${(pnjPrices.sjc.buyPrice * 1000000).toLocaleString('vi-VN')}` : '78,000,000'} ₫
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Bán ra</div>
+                <div className="text-lg font-bold text-red-600">
+                  {pnjPrices ? `${(pnjPrices.sjc.sellPrice * 1000000).toLocaleString('vi-VN')}` : '80,500,000'} ₫
+                </div>
+              </div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:30 hôm nay
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">DOJI</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Vàng nhẫn 9999
-            </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              76,800,000 ₫
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:25 hôm nay
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-900">PNJ</span>
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Hoạt động</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Vàng trang sức 24K
-            </div>
-            <div className="mt-2 text-lg font-bold text-gray-900">
-              75,500,000 ₫
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Cập nhật: 10:20 hôm nay
-            </div>
+            {pnjPrices && (
+              <div className="text-xs text-gray-500">
+                Nguồn: PNJ • Cập nhật tự động
+              </div>
+            )}
           </div>
         </div>
+        
+        {!pnjPrices && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Mẹo:</strong> Nhấn nút &quot;Cập nhật từ PNJ&quot; để lấy giá vàng mới nhất từ trang web PNJ.
+              Giá được cập nhật tự động từ nguồn chính thức.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Assets List */}
@@ -181,7 +297,12 @@ export default function GoldPage() {
           Danh sách Tài sản
         </h2>
         
-        {assets.length === 0 ? (
+        {isLoadingAssets ? (
+          <div className="text-center py-12">
+            <RefreshCw className="w-16 h-16 text-gray-400 mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600">Đang tải dữ liệu...</p>
+          </div>
+        ) : assets.length === 0 ? (
           <div className="text-center py-12">
             <Coins className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">Chưa có tài sản vàng bạc nào</p>

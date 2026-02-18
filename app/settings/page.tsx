@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings as SettingsIcon, Bell, DollarSign, Key } from 'lucide-react'
+import { Settings as SettingsIcon, Bell, DollarSign, Scale } from 'lucide-react'
 
 export default function SettingsPage() {
   const [defaultUsdtRate, setDefaultUsdtRate] = useState('24000')
   const [enablePriceAlerts, setEnablePriceAlerts] = useState(true)
   const [enablePaymentReminders, setEnablePaymentReminders] = useState(true)
   const [reminderDaysBefore, setReminderDaysBefore] = useState('2')
+  const [rebalanceThreshold, setRebalanceThreshold] = useState('2')
+  const [rebalanceFrequency, setRebalanceFrequency] = useState('monthly')
+  const [enableRebalanceNotifications, setEnableRebalanceNotifications] = useState(true)
 
   const handleSave = () => {
     alert('Đã lưu cài đặt!')
@@ -122,43 +125,88 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* API Keys */}
+
+
+      {/* Rebalance Settings */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="bg-green-100 p-2 rounded-lg">
-            <Key className="w-6 h-6 text-green-600" />
+          <div className="bg-indigo-100 p-2 rounded-lg">
+            <Scale className="w-6 h-6 text-indigo-600" />
           </div>
           <h2 className="text-xl font-semibold text-gray-900">
-            Quản lý API Keys
+            Cài đặt Tái cân bằng
           </h2>
         </div>
 
-        <div className="space-y-4">
-          <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-2">
-              Kết nối sàn giao dịch Crypto
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Kết nối API (Read-only) để tự động cập nhật số dư và giá
-            </p>
-            <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm Binance API Key
-              </button>
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm OKX API Key
-              </button>
-              <button className="w-full text-left px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                + Thêm Bybit API Key
-              </button>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Ngưỡng tái cân bằng (%)
+            </label>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600">±</span>
+              <select
+                value={rebalanceThreshold}
+                onChange={(e) => setRebalanceThreshold(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="1">1%</option>
+                <option value="2">2%</option>
+                <option value="3">3%</option>
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+              </select>
             </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Tự động đề xuất tái cân bằng khi chênh lệch vượt ngưỡng này
+            </p>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>⚠️ Lưu ý bảo mật:</strong> Chỉ nhập API Key ở chế độ Read-only (chỉ đọc). 
-              Tuyệt đối không sử dụng API Key có quyền rút tiền hoặc giao dịch.
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tần suất kiểm tra
+            </label>
+            <select
+              value={rebalanceFrequency}
+              onChange={(e) => setRebalanceFrequency(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="weekly">Hàng tuần</option>
+              <option value="monthly">Hàng tháng</option>
+              <option value="quarterly">Hàng quý</option>
+              <option value="manual">Thủ công</option>
+            </select>
+            <p className="text-sm text-gray-500 mt-1">
+              Tần suất hệ thống kiểm tra và thông báo nhu cầu tái cân bằng
             </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-gray-900">Tự động thông báo</p>
+              <p className="text-sm text-gray-500">
+                Nhận thông báo khi danh mục cần tái cân bằng
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={enableRebalanceNotifications}
+                onChange={(e) => setEnableRebalanceNotifications(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">💡 Lợi ích Tái cân bằng</h4>
+            <ul className="space-y-1 text-sm text-blue-800">
+              <li>• Duy trì mức độ rủi ro mong muốn</li>
+              <li>• &quot;Mua thấp, bán cao&quot; tự động</li>
+              <li>• Tối ưu hóa lợi nhuận dài hạn</li>
+              <li>• Kỷ luật đầu tư, tránh cảm tính</li>
+            </ul>
           </div>
         </div>
       </div>

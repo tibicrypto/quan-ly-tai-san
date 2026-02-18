@@ -89,16 +89,23 @@ Mở [http://localhost:3000](http://localhost:3000) trong trình duyệt.
 
 ### 🌐 Deploy lên Production (Vercel + Supabase)
 
-**Hướng dẫn chi tiết**: Xem [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+**Hướng dẫn chi tiết Supabase**: Xem [supabase/README.md](supabase/README.md) hoặc [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
 
 **Tóm tắt nhanh**:
 1. Tạo project trên [Supabase](https://supabase.com) (chọn region Singapore)
 2. Copy DATABASE_URL và DIRECT_URL từ Supabase
-3. Deploy lên [Vercel](https://vercel.com) từ GitHub repository
-4. Thêm environment variables trên Vercel
-5. Chạy `npx prisma db push` để tạo tables
+3. **Import database schema**: 
+   - Dùng SQL Editor: Copy nội dung từ `supabase/migrations/20260216_init_schema.sql`
+   - Hoặc chạy: `npx prisma db push`
+4. Deploy lên [Vercel](https://vercel.com) từ GitHub repository
+5. Thêm environment variables trên Vercel (xem `.env.example`)
 
 ✅ Done! App sẵn sàng trên production với database cloud.
+
+**📚 Tài liệu Supabase**:
+- [Setup Guide](supabase/README.md) - Hướng dẫn cài đặt chi tiết
+- [Import Guide](supabase/IMPORT_GUIDE.md) - 3 phương pháp import SQL
+- [Visual Overview](supabase/VISUAL_OVERVIEW.md) - Sơ đồ cấu trúc database
 
 ## 📱 Sử dụng
 
