@@ -33,30 +33,7 @@ function parsePrice(text: string): number | null {
   }
 }
 
-/**
- * Get mock gold prices as fallback when website scraping fails
- */
-function getMockGoldPrices(date: Date): PNJGoldPrices {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear().toString();
-  
-  // Mock prices (approximately current market rates in Vietnam)
-  return {
-    date: `${year}-${month}-${day}`,
-    pnj: {
-      type: 'PNJ',
-      buyPrice: 84.50, // millions VND
-      sellPrice: 85.50
-    },
-    sjc: {
-      type: 'SJC',
-      buyPrice: 84.00,
-      sellPrice: 85.00
-    },
-    timestamp: new Date().toISOString()
-  };
-}
+
 
 /**
  * Fetch gold prices from PNJ website for a specific date
@@ -83,8 +60,7 @@ async function fetchGoldPricesForDate(date: Date): Promise<PNJGoldPrices | null>
     
     if (!response.ok) {
       console.error(`PNJ fetch failed with status: ${response.status}`);
-      console.log('Using mock data as fallback');
-      return getMockGoldPrices(date);
+      return null;
     }
     
     const html = await response.text();
@@ -132,10 +108,10 @@ async function fetchGoldPricesForDate(date: Date): Promise<PNJGoldPrices | null>
       }
     }
     
-    // If still no prices found, use mock data
+    // If still no prices found, return null to indicate failure
     if (!pnjBuyPrice && !sjcBuyPrice) {
-      console.error('No prices found in HTML, using mock data');
-      return getMockGoldPrices(date);
+      console.error('No prices found in HTML');
+      return null;
     }
     
     return {
@@ -154,8 +130,7 @@ async function fetchGoldPricesForDate(date: Date): Promise<PNJGoldPrices | null>
     };
   } catch (error) {
     console.error('Error fetching PNJ gold prices:', error);
-    console.log('Using mock data as fallback');
-    return getMockGoldPrices(date);
+    return null;
   }
 }
 
@@ -164,7 +139,7 @@ async function fetchGoldPricesForDate(date: Date): Promise<PNJGoldPrices | null>
  * Query params:
  *   - date: YYYY-MM-DD (optional, defaults to today)
  * 
- * Returns gold prices from PNJ website, or mock data if scraping fails
+ * Returns gold prices from PNJ website, or error if scraping fails
  */
 export async function GET(request: Request) {
   try {
@@ -186,20 +161,22 @@ export async function GET(request: Request) {
     
     const prices = await fetchGoldPricesForDate(targetDate);
     
-    // fetchGoldPricesForDate now always returns data (real or mock)
-    // so this should never be null
     if (!prices) {
       return NextResponse.json(
-        getMockGoldPrices(targetDate)
+        { 
+          error: 'Could not fetch gold prices for the specified date',
+          date: targetDate.toISOString().split('T')[0]
+        },
+        { status: 404 }
       );
     }
     
     return NextResponse.json(prices);
   } catch (error) {
     console.error('API Error:', error);
-    // Return mock data on any error
     return NextResponse.json(
-      getMockGoldPrices(new Date())
+      { error: 'Internal server error while fetching gold prices' },
+      { status: 500 }
     );
   }
 }
@@ -224,14 +201,13 @@ export async function POST(request: Request) {
       );
     }
     
-    // Fetch current prices from PNJ (will use mock data if website unavailable)
+    // Fetch current prices from PNJ (will throw error if website unavailable)
     const prices = await fetchGoldPricesForDate(new Date());
     
     if (!prices) {
-      // This should never happen now, but just in case
       return NextResponse.json(
-        { error: 'Could not fetch current gold prices from PNJ' },
-        { status: 404 }
+        { error: 'Could not fetch current gold prices from PNJ. Please try again later.' },
+        { status: 503 }
       );
     }
     
@@ -304,7 +280,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Update Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error while saving prices' },
+      { 
+        error: 'Internal server error while saving prices',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
