@@ -26,6 +26,7 @@ export default function GoalDetailPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     fetchGoal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchGoal = async () => {

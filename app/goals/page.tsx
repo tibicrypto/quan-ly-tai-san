@@ -58,10 +58,13 @@ export default function GoalsPage() {
   }
 
   const totalGoals = goals.length
-  const completedGoals = goals.filter(g => g.progress >= 100).length
+  const completedGoals = goals.filter(g => {
+    const progress = (g.currentAmount / g.targetAmount) * 100
+    return progress >= 100
+  }).length
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0)
   const totalCurrent = goals.reduce((sum, g) => sum + g.currentAmount, 0)
-  const totalMonthly = goals.reduce((sum, g) => sum + g.monthlyContribution, 0)
+  const totalMonthly = goals.reduce((sum, g) => sum + (g.monthlyContribution || 0), 0)
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
