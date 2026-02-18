@@ -4,6 +4,14 @@ import { prisma } from '@/lib/prisma'
 // GET - Fetch all fund assets
 export async function GET() {
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Database not configured. Please set DATABASE_URL environment variable.' },
+        { status: 500 }
+      )
+    }
+
     const assets = await prisma.fundAsset.findMany({
       orderBy: {
         purchaseDate: 'desc',
@@ -13,8 +21,9 @@ export async function GET() {
     return NextResponse.json(assets, { status: 200 })
   } catch (error) {
     console.error('Error fetching fund assets:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Failed to fetch fund assets' },
+      { error: 'Failed to fetch fund assets', details: errorMessage },
       { status: 500 }
     )
   }
