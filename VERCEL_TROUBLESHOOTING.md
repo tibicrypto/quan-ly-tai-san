@@ -34,8 +34,10 @@ This is the most common issue when deploying to Vercel. Here's how to fix it:
 
    **For DATABASE_URL (Pooled/Transaction mode):**
    ```
-   postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+   postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
    ```
+   
+   **Note**: The `connection_limit=1` parameter is crucial for preventing prepared statement conflicts in serverless environments.
 
    **For DIRECT_URL (Direct connection):**
    ```
@@ -335,6 +337,51 @@ If you don't want to use Supabase, you can use Vercel's built-in Postgres:
    - Deploy again
 
 This helps isolate whether the issue is with environment variables or database connectivity.
+
+---
+
+## ⚠️ Common Error: Prepared Statement Conflicts
+
+### Error Message:
+```json
+{
+  "error": "Failed to fetch assets",
+  "details": "Error occurred during query execution: ConnectorError(PostgresError { 
+    code: \"42P05\", 
+    message: \"prepared statement \\\"s4\\\" already exists\" 
+  })"
+}
+```
+
+### Root Cause:
+This error occurs when using PgBouncer connection pooling with Prisma in serverless environments. Multiple concurrent requests reuse the same database connection and try to create prepared statements with the same name.
+
+### Solution:
+
+**1. Update your DATABASE_URL to include `connection_limit=1`:**
+
+```
+postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
+```
+
+The `connection_limit=1` parameter ensures each Prisma client instance uses only one connection, preventing prepared statement name conflicts.
+
+**2. Make sure your Prisma schema has both URLs configured:**
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")      // Pooled connection with pgbouncer=true&connection_limit=1
+  directUrl = env("DIRECT_URL")        // Direct connection for migrations
+}
+```
+
+**3. Redeploy your application** after updating the environment variables in Vercel.
+
+**Why this works:**
+- `pgbouncer=true`: Tells Prisma to use transaction pooling mode
+- `connection_limit=1`: Limits each Prisma instance to one connection, preventing prepared statement conflicts
+- Serverless functions create new Prisma instances per request, but each uses its own single connection
 
 ---
 
