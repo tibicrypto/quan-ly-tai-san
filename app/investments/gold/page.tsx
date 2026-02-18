@@ -186,12 +186,12 @@ export default function GoldPage() {
             </button>
           </div>
           <div className="text-xl font-bold">
-            {pnjPrices ? `${pnjPrices.pnj.sellPrice} tr/lượng` : '78.2 tr/lượng'}
+            {pnjPrices ? `${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')} ₫/lượng` : '78,200,000 ₫/lượng'}
           </div>
           <div className="text-sm text-amber-100 mt-2">
             {pnjPrices 
-              ? `Mua: ${pnjPrices.pnj.buyPrice} tr • Bán: ${pnjPrices.pnj.sellPrice} tr`
-              : 'Mua: 76.8 tr • Bán: 78.2 tr'
+              ? `Mua: ${(pnjPrices.pnj.buyPrice * 1000000).toLocaleString('vi-VN')} ₫ • Bán: ${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')} ₫`
+              : 'Mua: 76,800,000 ₫ • Bán: 78,200,000 ₫'
             }
           </div>
           {lastUpdate && (
@@ -232,13 +232,13 @@ export default function GoldPage() {
               <div>
                 <div className="text-xs text-gray-500">Mua vào</div>
                 <div className="text-lg font-bold text-green-600">
-                  {pnjPrices ? `${pnjPrices.pnj.buyPrice.toFixed(2)}` : '76.80'} tr
+                  {pnjPrices ? `${(pnjPrices.pnj.buyPrice * 1000000).toLocaleString('vi-VN')}` : '76,800,000'} ₫
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-500">Bán ra</div>
                 <div className="text-lg font-bold text-red-600">
-                  {pnjPrices ? `${pnjPrices.pnj.sellPrice.toFixed(2)}` : '78.20'} tr
+                  {pnjPrices ? `${(pnjPrices.pnj.sellPrice * 1000000).toLocaleString('vi-VN')}` : '78,200,000'} ₫
                 </div>
               </div>
             </div>
@@ -263,13 +263,13 @@ export default function GoldPage() {
               <div>
                 <div className="text-xs text-gray-500">Mua vào</div>
                 <div className="text-lg font-bold text-green-600">
-                  {pnjPrices ? `${pnjPrices.sjc.buyPrice.toFixed(2)}` : '78.00'} tr
+                  {pnjPrices ? `${(pnjPrices.sjc.buyPrice * 1000000).toLocaleString('vi-VN')}` : '78,000,000'} ₫
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-500">Bán ra</div>
                 <div className="text-lg font-bold text-red-600">
-                  {pnjPrices ? `${pnjPrices.sjc.sellPrice.toFixed(2)}` : '80.50'} tr
+                  {pnjPrices ? `${(pnjPrices.sjc.sellPrice * 1000000).toLocaleString('vi-VN')}` : '80,500,000'} ₫
                 </div>
               </div>
             </div>
